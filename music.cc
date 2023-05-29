@@ -3,8 +3,12 @@
 #include <array>
 #include <cassert>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <map>
+#include <sstream>
+
+#include "absl/log/log.h"
 
 namespace z2music {
 
@@ -19,13 +23,11 @@ Note::Note(Duration d, Pitch p) : value_(to_byte(d) | to_byte(p)) {}
 
 Note Note::from_midi(int note, int ticks) {
   if (kMidiPitchMap.count(note) == 0) {
-    fprintf(stderr, "Note %d is not usable\n", note);
-    exit(1);
+    LOG(FATAL) << "Note " << note << " is not usable.";
   }
 
   if (kMidiDurationMap.count(ticks) == 0) {
-    fprintf(stderr, "Duration %d is not usable\n", ticks);
-    exit(1);
+    LOG(FATAL) << "Duration " << ticks << " is not usable";
   }
 
   return kMidiPitchMap.at(note) | kMidiDurationMap.at(ticks);
@@ -437,7 +439,7 @@ std::vector<Note> Pattern::parse_notes(const std::string& data, int transpose) {
         break;
 
       default:
-        fprintf(stderr, "Unknown char '%c' when parsing notes\n", c);
+        LOG(WARNING) << "Unknown char '" << c << "' when parsing notes";
         break;
     }
   }
@@ -587,7 +589,7 @@ std::string parse_string_(const Rom& rom, size_t address) {
     s.append(1, z2_decode_(rom.getc(address + i + 3)));
   }
 
-  fprintf(stderr, "Found string at %06lx - [%s]\n", address, s.c_str());
+  LOG(INFO) << std::hex << std::showbase << std::setw(6) << "Found string at " << address << " - [" << s << "]";
 
   return s;
 }
@@ -801,7 +803,7 @@ void Rom::move_song_table(size_t loader_address, uint16_t base_address) {
   } else if (loader_address == kGreatPalaceLoader) {
     great_palace_song_table = base_address + 0x010000;
   } else {
-    fprintf(stderr, "Unsure what loader is at %06lx, need manual update\n", loader_address);
+    LOG(ERROR) << std::hex << std::showbase << std::setw(6) << "Unsure what loader is at " << loader_address << ", need manual update";
   }
 
   const uint16_t old_base = getw(loader_address + 1);
@@ -814,14 +816,14 @@ void Rom::move_song_table(size_t loader_address, uint16_t base_address) {
     if (byte == 0xb9) {
       const uint16_t addr = getw(loader_address + 1);
       const uint16_t new_addr = base_address + addr - old_base;
-      fprintf(stderr, "Found LDA, replacing %04X with %04X\n", addr, new_addr);
+      LOG(INFO) << std::hex << std::showbase << std::setw(6) << "Found LDA, replacing " << addr << " with " << new_addr;
       putw(loader_address + 1, new_addr);
       loader_address += 3;
     } else if (byte == 0x4c) {
-      fprintf(stderr, "Found JMP, done moving table\n");
+      LOG(INFO) << "Found JMP, done moving table";
       break;
     } else if (loader_address >= 0x19c74) {
-      fprintf(stderr, "Got to music reset code, done moving table\n");
+      LOG(INFO) << "Got to music reset code, done moving table";
       break;
     } else {
       ++loader_address;
@@ -867,7 +869,7 @@ void Rom::commit(size_t address, std::vector<Rom::SongTitle> songs) {
   // Calculate song offset table
   for (auto s : songs) {
     offsets.push_back(offset);
-    fprintf(stderr, "Offset for next song: %02x\n", offset);
+    LOG(INFO) << std::hex << std::showbase << std::setw(6) << "Offset for next song: " << offset;
     offset += songs_.at(s).sequence_length() + 1;
   }
 
@@ -893,12 +895,15 @@ void Rom::commit(size_t address, std::vector<Rom::SongTitle> songs) {
   for (auto s : songs) {
     const auto& song = songs_.at(s);
 
-    fprintf(stderr, "Writing seq at %02x with pat at %02x: ", seq_offset, pat_offset);
+    LOG(INFO) << std::hex << std::showbase << std::setw(6) << "Writing seq at " << seq_offset << " with pat at " << pat_offset;
     const std::vector<uint8_t> seq = song.sequence_data(pat_offset);
     write(address + seq_offset, seq);
 
-    for (auto b : seq) fprintf(stderr, "%02x ", b);
-    fprintf(stderr, "\n");
+    std::ostringstream output;
+
+    output << std::hex << std::showbase << std::setw(2);
+    for (auto b : seq) output << b << " ";
+    LOG(INFO) << output.str();
 
     for (size_t i = 0; i < song.pattern_count(); ++i) {
       pat_offset += song.at(i)->metadata_length();
@@ -917,19 +922,20 @@ void Rom::commit(size_t address, std::vector<Rom::SongTitle> songs) {
   size_t note_address = pat_offset + address;
   pat_offset = first_pattern;
 
-  fprintf(stderr, "Note data to start at %06lx\n", note_address);
+  LOG(INFO) << std::hex << std::showbase << std::setw(6) << "Note data to start at " << note_address;
 
   for (auto s : songs) {
     for (auto p : songs_.at(s).patterns()) {
       const std::vector<uint8_t> note_data = p.note_data();
       const std::vector<uint8_t> meta_data = p.meta_data(note_address);
 
-      fprintf(stderr, "Pattern at %06lx, notes at %06lx\n", address + pat_offset, note_address);
-      fprintf(stderr, "Pattern metadata: ");
+      LOG(INFO) << std::hex << std::showbase << std::setw(6) << "Pattern at " << address + pat_offset << ", notes at " << note_address;
+      std::ostringstream output;
+      output << std::hex << std::showbase << std::setw(2);
       for (size_t i = 0; i < meta_data.size(); i += 2) {
-        fprintf(stderr, "%02x%02x ", meta_data[i], meta_data[i + 1]);
+        output << meta_data[i] << meta_data[i + 1] << " ";
       }
-      fprintf(stderr, "\n");
+      LOG(INFO) << output.str();
 
       write(address + pat_offset, meta_data);
       write(note_address, note_data);
@@ -947,7 +953,7 @@ size_t Rom::get_song_table_address(size_t loader_address) const {
   // Add the bank offset to the address read
   const size_t addr = getw(loader_address + 1) + 0x10000;
 
-  fprintf(stderr, "Got address %06lx, from LDA $%04lX,y at %06lx\n", addr, (addr & 0xffff), loader_address);
+  LOG(INFO) << std::hex << std::showbase << std::setw(6) << "Got address " << addr << ", from LSA $" << std::noshowbase << std::setw(4) << (addr & 0xffff) << ",y at " << std::showbase << std::setw(6) << loader_address;
   return addr;
 }
 

@@ -3,4 +3,7 @@ cc_library(
     srcs = [ "music.cc" ],
     hdrs = [ "music.h" ],
     visibility = ["//visibility:public"],
+    deps = [
+      "@com_google_absl//absl/log:log",
+    ]
 )
