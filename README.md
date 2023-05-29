@@ -64,4 +64,4 @@ for (size_t i = 0; i < house->sequence_length(); ++i) {
 }
 ```
 
-Additional examples can be found in [main.cc](main.cc) and [solstice.cc](solstice.cc).
+Additional examples can be found in [solstice.cc](projects/solstice.cc).
