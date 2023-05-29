@@ -816,7 +816,7 @@ void Rom::move_song_table(size_t loader_address, uint16_t base_address) {
     if (byte == 0xb9) {
       const uint16_t addr = getw(loader_address + 1);
       const uint16_t new_addr = base_address + addr - old_base;
-      LOG(INFO) << std::hex << std::showbase << std::setw(6) << "Found LDA, replacing " << addr << " with " << new_addr;
+      LOG(INFO) << std::hex << std::noshowbase << std::setw(4) << "Found LDA, replacing " << addr << " with " << new_addr;
       putw(loader_address + 1, new_addr);
       loader_address += 3;
     } else if (byte == 0x4c) {
@@ -869,7 +869,7 @@ void Rom::commit(size_t address, std::vector<Rom::SongTitle> songs) {
   // Calculate song offset table
   for (auto s : songs) {
     offsets.push_back(offset);
-    LOG(INFO) << std::hex << std::showbase << std::setw(6) << "Offset for next song: " << offset;
+    LOG(INFO) << std::hex << std::showbase << std::setw(2) << "Offset for next song: " << static_cast<uint32_t>(offset);
     offset += songs_.at(s).sequence_length() + 1;
   }
 
@@ -895,14 +895,14 @@ void Rom::commit(size_t address, std::vector<Rom::SongTitle> songs) {
   for (auto s : songs) {
     const auto& song = songs_.at(s);
 
-    LOG(INFO) << std::hex << std::showbase << std::setw(6) << "Writing seq at " << seq_offset << " with pat at " << pat_offset;
+    LOG(INFO) << std::hex << std::showbase << std::setw(2) << "Writing seq at " << static_cast<uint32_t>(seq_offset) << " with pat at " << static_cast<uint32_t>(pat_offset);
     const std::vector<uint8_t> seq = song.sequence_data(pat_offset);
     write(address + seq_offset, seq);
 
     std::ostringstream output;
 
     output << std::hex << std::showbase << std::setw(2);
-    for (auto b : seq) output << b << " ";
+    for (auto b : seq) output << static_cast<uint32_t>(b) << " ";
     LOG(INFO) << output.str();
 
     for (size_t i = 0; i < song.pattern_count(); ++i) {
@@ -933,7 +933,7 @@ void Rom::commit(size_t address, std::vector<Rom::SongTitle> songs) {
       std::ostringstream output;
       output << std::hex << std::showbase << std::setw(2);
       for (size_t i = 0; i < meta_data.size(); i += 2) {
-        output << meta_data[i] << meta_data[i + 1] << " ";
+        output << static_cast<uint32_t>(meta_data[i]) << static_cast<uint32_t>(meta_data[i + 1]) << " ";
       }
       LOG(INFO) << output.str();
 
