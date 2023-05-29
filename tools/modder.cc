@@ -60,10 +60,12 @@ void process_modfile(z2music::Rom& rom, std::istream& file) {
   int transpose = 0;
   size_t patterns = 0;
   bool sequenced = false;
-  z2music::Song* song;
+  z2music::Song* song = nullptr;
 
   std::string line;
+  size_t line_number = 0;
   while (std::getline(file, line)) {
+    ++line_number;
     std::istringstream input(line);
     std::string command;
 
@@ -71,7 +73,7 @@ void process_modfile(z2music::Rom& rom, std::istream& file) {
       LOG(FATAL) << "Could not parse line: " << line;
     }
 
-    if (command == "song ") {
+    if (command == "song") {
       std::string name;
       if (!(input >> name)) {
         LOG(FATAL) << "Song requires name";
@@ -86,23 +88,26 @@ void process_modfile(z2music::Rom& rom, std::istream& file) {
       patterns = 0;
       sequenced = false;
 
+      LOG(INFO) << "Clearing song " << song;
+
     } else if (command == "transpose") {
       if (!(input >> transpose)) {
         LOG(FATAL) << "Transpose requires offset";
       }
 
-    } else if (command == "pattern") {
-      if (sequenced) {
-        LOG(WARNING) << "Song already sequenced";
-      }
+      LOG(INFO) << "Transpose set to " << transpose;
 
-      uint8_t tempo;
+    } else if (command == "pattern") {
+      if (!song) LOG(FATAL) << "Pattern set with no song";
+      if (sequenced) LOG(WARNING) << "Song already sequenced";
+
+      uint32_t tempo;
       if (!(input >> std::hex >> tempo)) {
         LOG(FATAL) << "Pattern requires tempo";
       }
 
       song->add_pattern({
-          tempo,
+          static_cast<uint8_t>(tempo & 0xff),
           z2music::Pattern::parse_notes(read_line(file)),
           z2music::Pattern::parse_notes(read_line(file)),
           z2music::Pattern::parse_notes(read_line(file)),
@@ -110,11 +115,11 @@ void process_modfile(z2music::Rom& rom, std::istream& file) {
           });
 
       ++patterns;
+      LOG(INFO) << "Added pattern " << patterns;
 
     } else if (command == "sequence") {
-      if (sequenced) {
-        LOG(WARNING) << "Song already sequenced";
-      }
+      if (!song) LOG(FATAL) << "Sequenc set with no song";
+      if (sequenced) LOG(WARNING) << "Song already sequenced";
 
       size_t n;
       std::vector<size_t> sequence;
@@ -126,10 +131,15 @@ void process_modfile(z2music::Rom& rom, std::istream& file) {
         sequenced = true;
       }
 
+      song->set_sequence(sequence);
+      LOG(INFO) << "Sequence set";
+
     } else {
       LOG(WARNING) << "Unknown keyword '" << command << "'";
     }
   }
+
+  LOG(INFO) << "Parsed " << line_number << " lines of music data";
 
   if (song && !sequenced) {
     LOG(WARNING) << "Reached end of file with unsequenced song";
@@ -147,9 +157,11 @@ int main(int argc, char** argv) {
   z2music::Rom rom(absl::GetFlag(FLAGS_rom));
 
   if (args.size() > 1) {
+    LOG(INFO) << "Parsing data from given filename: " << args[1];
     std::ifstream file(args[1]);
     process_modfile(rom, file);
   } else {
+    LOG(INFO) << "Parsing data from STDIN";
     process_modfile(rom, std::cin);
   }
 
