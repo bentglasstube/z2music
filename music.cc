@@ -41,25 +41,29 @@ void Note::duration(Note::Duration d) {
   value_ = to_byte(d) | to_byte(pitch());
 }
 
-Note::Pitch Note::pitch() const {
-  return static_cast<Pitch>(value_ & 0x3e);
-}
+Note::Pitch Note::pitch() const { return static_cast<Pitch>(value_ & 0x3e); }
 
-void Note::pitch(Note::Pitch p) {
-  value_ = to_byte(duration()) | to_byte(p);
-}
+void Note::pitch(Note::Pitch p) { value_ = to_byte(duration()) | to_byte(p); }
 
 size_t Note::length() const {
   // MIDI generally uses 96 ppqn, so we'll use the same
   switch (duration()) {
-    case Duration::Sixteenth:       return 96 / 4;
-    case Duration::DottedQuarter:   return 96 * 3/2;
-    case Duration::DottedEighth:    return 96 / 2 * 3/2;
-    case Duration::Half:            return 96 * 2;
-    case Duration::Eighth:          return 96 / 2;
-    case Duration::EighthTriplet:   return 96 / 2 * 2/3;
-    case Duration::Quarter:         return 96;
-    case Duration::QuarterTriplet:  return 96 * 2/3;
+    case Duration::Sixteenth:
+      return 96 / 4;
+    case Duration::DottedQuarter:
+      return 96 * 3 / 2;
+    case Duration::DottedEighth:
+      return 96 / 2 * 3 / 2;
+    case Duration::Half:
+      return 96 * 2;
+    case Duration::Eighth:
+      return 96 / 2;
+    case Duration::EighthTriplet:
+      return 96 / 2 * 2 / 3;
+    case Duration::Quarter:
+      return 96;
+    case Duration::QuarterTriplet:
+      return 96 * 2 / 3;
   }
 
   return 0;
@@ -67,63 +71,90 @@ size_t Note::length() const {
 
 std::string Note::pitch_string() const {
   switch (pitch()) {
-    case Pitch::Rest: return "---.";
-    case Pitch::Cs3:  return "C#3.";
-    case Pitch::E3:   return "E3..";
-    case Pitch::G3:   return "G3..";
-    case Pitch::Gs3:  return "G#3.";
-    case Pitch::A3:   return "A3..";
-    case Pitch::As3:  return "A#3.";
-    case Pitch::B3:   return "B3..";
-    case Pitch::C4:   return "C4..";
-    case Pitch::Cs4:  return "C#4.";
-    case Pitch::D4:   return "D4..";
-    case Pitch::Ds4:  return "D#4.";
-    case Pitch::E4:   return "E4..";
-    case Pitch::F4:   return "F4..";
-    case Pitch::Fs4:  return "F#4.";
-    case Pitch::G4:   return "G4..";
-    case Pitch::Gs4:  return "G#4.";
-    case Pitch::A4:   return "A4..";
-    case Pitch::As4:  return "A#4.";
-    case Pitch::B4:   return "B4..";
-    case Pitch::C5:   return "C5..";
-    case Pitch::Cs5:  return "C#5.";
-    case Pitch::D5:   return "D5..";
-    case Pitch::Ds5:  return "D#5.";
-    case Pitch::E5:   return "E5..";
-    case Pitch::F5:   return "F5..";
-    case Pitch::Fs5:  return "F#5.";
-    case Pitch::G5:   return "G5..";
-    case Pitch::A5:   return "A5..";
-    case Pitch::As5:  return "A#5.";
-    case Pitch::B5:   return "B5..";
+    case Pitch::Rest:
+      return "---.";
+    case Pitch::Cs3:
+      return "C#3.";
+    case Pitch::E3:
+      return "E3..";
+    case Pitch::G3:
+      return "G3..";
+    case Pitch::Gs3:
+      return "G#3.";
+    case Pitch::A3:
+      return "A3..";
+    case Pitch::As3:
+      return "A#3.";
+    case Pitch::B3:
+      return "B3..";
+    case Pitch::C4:
+      return "C4..";
+    case Pitch::Cs4:
+      return "C#4.";
+    case Pitch::D4:
+      return "D4..";
+    case Pitch::Ds4:
+      return "D#4.";
+    case Pitch::E4:
+      return "E4..";
+    case Pitch::F4:
+      return "F4..";
+    case Pitch::Fs4:
+      return "F#4.";
+    case Pitch::G4:
+      return "G4..";
+    case Pitch::Gs4:
+      return "G#4.";
+    case Pitch::A4:
+      return "A4..";
+    case Pitch::As4:
+      return "A#4.";
+    case Pitch::B4:
+      return "B4..";
+    case Pitch::C5:
+      return "C5..";
+    case Pitch::Cs5:
+      return "C#5.";
+    case Pitch::D5:
+      return "D5..";
+    case Pitch::Ds5:
+      return "D#5.";
+    case Pitch::E5:
+      return "E5..";
+    case Pitch::F5:
+      return "F5..";
+    case Pitch::Fs5:
+      return "F#5.";
+    case Pitch::G5:
+      return "G5..";
+    case Pitch::A5:
+      return "A5..";
+    case Pitch::As5:
+      return "A#5.";
+    case Pitch::B5:
+      return "B5..";
   }
 
   return "???.";
 }
 
-Note::operator uint8_t() const {
-  return value_;
-}
+Note::operator uint8_t() const { return value_; }
 
 const std::unordered_map<int, uint8_t> Note::kMidiPitchMap = {
-  {  0, 0x02 }, // special pitch value for rest
-  { 49, 0x3e }, { 52, 0x04 }, { 55, 0x06 }, { 56, 0x08 }, { 57, 0x0a }, { 58, 0x0c },
-  { 59, 0x0e }, { 60, 0x10 }, { 61, 0x12 }, { 62, 0x14 }, { 63, 0x16 }, { 64, 0x18 },
-  { 65, 0x1a }, { 66, 0x1c }, { 67, 0x1e }, { 68, 0x20 }, { 69, 0x22 }, { 70, 0x24 },
-  { 71, 0x26 }, { 72, 0x28 }, { 73, 0x2a }, { 74, 0x2c }, { 75, 0x2e }, { 76, 0x30 },
-  { 77, 0x32 }, { 78, 0x34 }, { 79, 0x36 }, { 81, 0x38 }, { 82, 0x3a }, { 83, 0x3c },
+    {0, 0x02},  // special pitch value for rest
+    {49, 0x3e}, {52, 0x04}, {55, 0x06}, {56, 0x08}, {57, 0x0a}, {58, 0x0c},
+    {59, 0x0e}, {60, 0x10}, {61, 0x12}, {62, 0x14}, {63, 0x16}, {64, 0x18},
+    {65, 0x1a}, {66, 0x1c}, {67, 0x1e}, {68, 0x20}, {69, 0x22}, {70, 0x24},
+    {71, 0x26}, {72, 0x28}, {73, 0x2a}, {74, 0x2c}, {75, 0x2e}, {76, 0x30},
+    {77, 0x32}, {78, 0x34}, {79, 0x36}, {81, 0x38}, {82, 0x3a}, {83, 0x3c},
 };
 
 const std::unordered_map<int, uint8_t> Note::kMidiDurationMap = {
-  {  6, 0x00 }, { 36, 0x01 }, { 18, 0x40 }, { 48, 0x41 },
-  { 12, 0x80 }, {  8, 0x81 }, { 24, 0xc0 }, { 16, 0xc1 },
+    {6, 0x00},  {36, 0x01}, {18, 0x40}, {48, 0x41},
+    {12, 0x80}, {8, 0x81},  {24, 0xc0}, {16, 0xc1},
 };
 
-Pattern::Pattern() : tempo_(0x18) {
-  clear();
-}
+Pattern::Pattern() : tempo_(0x18) { clear(); }
 
 Pattern::Pattern(const Rom& rom, size_t address) {
   clear();
@@ -142,12 +173,9 @@ Pattern::Pattern(const Rom& rom, size_t address) {
   if (header[5] > 0) read_notes(Channel::Noise, rom, note_base + header[5]);
 }
 
-Pattern::Pattern(uint8_t tempo,
-    std::vector<Note> pw1,
-    std::vector<Note> pw2,
-    std::vector<Note> triangle,
-    std::vector<Note> noise):
-tempo_(tempo) {
+Pattern::Pattern(uint8_t tempo, std::vector<Note> pw1, std::vector<Note> pw2,
+                 std::vector<Note> triangle, std::vector<Note> noise)
+    : tempo_(tempo) {
   clear();
   add_notes(Channel::Pulse1, pw1);
   add_notes(Channel::Pulse2, pw2);
@@ -155,12 +183,10 @@ tempo_(tempo) {
   add_notes(Channel::Noise, noise);
 }
 
-Pattern::Pattern(uint8_t v1, uint8_t v2,
-    std::vector<Note> pw1,
-    std::vector<Note> pw2,
-    std::vector<Note> triangle,
-    std::vector<Note> noise):
-tempo_(0x00), voice1_(v1), voice2_(v2) {
+Pattern::Pattern(uint8_t v1, uint8_t v2, std::vector<Note> pw1,
+                 std::vector<Note> pw2, std::vector<Note> triangle,
+                 std::vector<Note> noise)
+    : tempo_(0x00), voice1_(v1), voice2_(v2) {
   clear();
   add_notes(Channel::Pulse1, pw1);
   add_notes(Channel::Pulse2, pw2);
@@ -168,9 +194,7 @@ tempo_(0x00), voice1_(v1), voice2_(v2) {
   add_notes(Channel::Noise, noise);
 }
 
-size_t Pattern::length() const {
-  return length(Channel::Pulse1);
-}
+size_t Pattern::length() const { return length(Channel::Pulse1); }
 
 void Pattern::add_notes(Pattern::Channel ch, std::vector<Note> notes) {
   for (auto n : notes) {
@@ -189,13 +213,9 @@ std::vector<Note> Pattern::notes(Pattern::Channel ch) const {
   return notes_.at(ch);
 }
 
-void Pattern::tempo(uint8_t tempo) {
-  tempo_ = tempo;
-}
+void Pattern::tempo(uint8_t tempo) { tempo_ = tempo; }
 
-uint8_t Pattern::tempo() const {
-  return tempo_;
-}
+uint8_t Pattern::tempo() const { return tempo_; }
 
 bool Pattern::validate() const {
   // TODO validate pattern
@@ -207,17 +227,11 @@ bool Pattern::validate() const {
   return true;
 }
 
-bool Pattern::voiced() const {
-  return tempo_ == 0x00;
-}
+bool Pattern::voiced() const { return tempo_ == 0x00; }
 
-uint8_t Pattern::voice1() const {
-  return voice1_;
-}
+uint8_t Pattern::voice1() const { return voice1_; }
 
-uint8_t Pattern::voice2() const {
-  return voice2_;
-}
+uint8_t Pattern::voice2() const { return voice2_; }
 
 void Pattern::set_voicing(uint8_t v1, uint8_t v2) {
   tempo_ = 0x00;
@@ -225,18 +239,16 @@ void Pattern::set_voicing(uint8_t v1, uint8_t v2) {
   voice2_ = v2;
 }
 
-size_t Pattern::metadata_length() const {
-  return voiced() ? 8 : 6;
-}
+size_t Pattern::metadata_length() const { return voiced() ? 8 : 6; }
 
 std::vector<uint8_t> Pattern::note_data() const {
   std::vector<uint8_t> b;
 
   const std::array<Channel, 4> channels = {
-    Channel::Pulse1,
-    Channel::Pulse2,
-    Channel::Triangle,
-    Channel::Noise,
+      Channel::Pulse1,
+      Channel::Pulse2,
+      Channel::Triangle,
+      Channel::Noise,
   };
 
   for (auto ch : channels) {
@@ -383,11 +395,8 @@ std::vector<Note> Pattern::parse_notes(const std::string& data, int transpose) {
         break;
 
       case 'b':
-        if (pitch == 0) { // B note
-          pitch = 12;
-        } else { // flat
-          --pitch;
-        }
+        // flat if pitch is already set, otherwise b note
+        pitch = pitch == 0 ? 12 : pitch - 1;
         break;
 
       case '#':
@@ -477,17 +486,11 @@ Song::Song(const Rom& rom, size_t address, size_t entry) {
   }
 }
 
-void Song::add_pattern(const Pattern& pattern) {
-  patterns_.push_back(pattern);
-}
+void Song::add_pattern(const Pattern& pattern) { patterns_.push_back(pattern); }
 
-void Song::set_sequence(const std::vector<size_t>& seq) {
-  sequence_ = seq;
-}
+void Song::set_sequence(const std::vector<size_t>& seq) { sequence_ = seq; }
 
-void Song::append_sequence(size_t n) {
-  sequence_.push_back(n);
-}
+void Song::append_sequence(size_t n) { sequence_.push_back(n); }
 
 std::vector<uint8_t> Song::sequence_data(uint8_t first) const {
   std::vector<uint8_t> b;
@@ -509,13 +512,9 @@ std::vector<uint8_t> Song::sequence_data(uint8_t first) const {
   return b;
 }
 
-size_t Song::sequence_length() const {
-  return sequence_.size();
-}
+size_t Song::sequence_length() const { return sequence_.size(); }
 
-size_t Song::pattern_count() const {
-  return patterns_.size();
-}
+size_t Song::pattern_count() const { return patterns_.size(); }
 
 size_t Song::metadata_length() const {
   size_t length = sequence_length() + 1;
@@ -530,9 +529,7 @@ void Song::clear() {
   sequence_.clear();
 }
 
-std::vector<Pattern> Song::patterns() {
-  return patterns_;
-}
+std::vector<Pattern> Song::patterns() { return patterns_; }
 
 Pattern* Song::at(size_t i) {
   if (i < 0 || i >= sequence_.size()) return nullptr;
@@ -546,11 +543,16 @@ const Pattern* Song::at(size_t i) const {
 
 char z2_decode_(uint8_t data) {
   switch (data) {
-    case 0x07: return '!';
-    case 0xce: return '/';
-    case 0xcf: return '.';
-    case 0xf4: return ' ';
-    case 0xf5: return ' ';
+    case 0x07:
+      return '!';
+    case 0xce:
+      return '/';
+    case 0xcf:
+      return '.';
+    case 0xf4:
+      return ' ';
+    case 0xf5:
+      return ' ';
   }
 
   if (data >= 0xd0 && data <= 0xd9) return data - 0xa0;
@@ -563,10 +565,14 @@ char z2_decode_(uint8_t data) {
 
 uint8_t z2_encode_(char data) {
   switch (data) {
-    case ' ': return 0xf4;
-    case '.': return 0xcf;
-    case '/': return 0xce;
-    case '!': return 0x07;
+    case ' ':
+      return 0xf4;
+    case '.':
+      return 0xcf;
+    case '/':
+      return 0xce;
+    case '!':
+      return 0x07;
   }
 
   if (data >= 0x30 && data <= 0x39) return data + 0xa0;
@@ -589,7 +595,9 @@ std::string parse_string_(const Rom& rom, size_t address) {
     s.append(1, z2_decode_(rom.getc(address + i + 3)));
   }
 
-  LOG(INFO) << std::hex << std::setfill('0') << std::showbase << "Found string at " << std::setw(6) << address << " - [" << s << "]";
+  LOG(INFO) << std::hex << std::setfill('0') << std::showbase
+            << "Found string at " << std::setw(6) << address << " - [" << s
+            << "]";
 
   return s;
 }
@@ -627,7 +635,7 @@ void Credits::set(size_t page, const Credits::Text& text) {
 
 Credits::Text Credits::get(size_t page) const {
   if (page < kCreditsPages) return credits_[page];
-  return {"","",""};
+  return {"", "", ""};
 }
 
 void Credits::commit(Rom& rom) const {
@@ -665,13 +673,13 @@ void Credits::commit(Rom& rom) const {
 Rom::Rom(const std::string& filename) {
   std::ifstream file(filename, std::ios::binary);
   if (file.is_open()) {
-    file.read(reinterpret_cast<char *>(&header_[0]), kHeaderSize);
-    file.read(reinterpret_cast<char *>(&data_[0]), kRomSize);
+    file.read(reinterpret_cast<char*>(&header_[0]), kHeaderSize);
+    file.read(reinterpret_cast<char*>(&data_[0]), kRomSize);
 
-    title_screen_table      = get_song_table_address(kTitleScreenLoader);
-    overworld_song_table    = get_song_table_address(kOverworldLoader);
-    town_song_table         = get_song_table_address(kTownLoader);
-    palace_song_table       = get_song_table_address(kPalaceLoader);
+    title_screen_table = get_song_table_address(kTitleScreenLoader);
+    overworld_song_table = get_song_table_address(kOverworldLoader);
+    town_song_table = get_song_table_address(kTownLoader);
+    palace_song_table = get_song_table_address(kPalaceLoader);
     great_palace_song_table = get_song_table_address(kGreatPalaceLoader);
 
     songs_[SongTitle::TitleIntro] = Song(*this, title_screen_table, 0);
@@ -696,12 +704,16 @@ Rom::Rom(const std::string& filename) {
     songs_[SongTitle::PalaceItemFanfare] = Song(*this, palace_song_table, 4);
     songs_[SongTitle::CrystalFanfare] = Song(*this, palace_song_table, 6);
 
-    songs_[SongTitle::GreatPalaceIntro] = Song(*this, great_palace_song_table, 0);
-    songs_[SongTitle::GreatPalaceTheme] = Song(*this, great_palace_song_table, 1);
+    songs_[SongTitle::GreatPalaceIntro] =
+        Song(*this, great_palace_song_table, 0);
+    songs_[SongTitle::GreatPalaceTheme] =
+        Song(*this, great_palace_song_table, 1);
     songs_[SongTitle::ZeldaTheme] = Song(*this, great_palace_song_table, 2);
     songs_[SongTitle::CreditsTheme] = Song(*this, great_palace_song_table, 3);
-    songs_[SongTitle::GreatPalaceItemFanfare] = Song(*this, great_palace_song_table, 4);
-    songs_[SongTitle::TriforceFanfare] = Song(*this, great_palace_song_table, 5);
+    songs_[SongTitle::GreatPalaceItemFanfare] =
+        Song(*this, great_palace_song_table, 4);
+    songs_[SongTitle::TriforceFanfare] =
+        Song(*this, great_palace_song_table, 5);
     songs_[SongTitle::FinalBossTheme] = Song(*this, great_palace_song_table, 6);
 
     credits_ = Credits(*this);
@@ -741,40 +753,27 @@ void Rom::write(size_t address, std::vector<uint8_t> data) {
 }
 
 bool Rom::commit() {
-  commit(title_screen_table, {
-      SongTitle::TitleIntro,
-      SongTitle::TitleThemeStart,
-      SongTitle::TitleThemeBuildup,
-      SongTitle::TitleThemeMain,
-      SongTitle::TitleThemeBreakdown});
+  commit(title_screen_table,
+         {SongTitle::TitleIntro, SongTitle::TitleThemeStart,
+          SongTitle::TitleThemeBuildup, SongTitle::TitleThemeMain,
+          SongTitle::TitleThemeBreakdown});
 
-  commit(overworld_song_table, {
-      SongTitle::OverworldIntro,
-      SongTitle::OverworldTheme,
-      SongTitle::BattleTheme,
-      SongTitle::CaveItemFanfare});
+  commit(overworld_song_table,
+         {SongTitle::OverworldIntro, SongTitle::OverworldTheme,
+          SongTitle::BattleTheme, SongTitle::CaveItemFanfare});
 
-  commit(town_song_table, {
-      SongTitle::TownIntro,
-      SongTitle::TownTheme,
-      SongTitle::HouseTheme,
-      SongTitle::TownItemFanfare});
+  commit(town_song_table, {SongTitle::TownIntro, SongTitle::TownTheme,
+                           SongTitle::HouseTheme, SongTitle::TownItemFanfare});
 
-  commit(palace_song_table, {
-      SongTitle::PalaceIntro,
-      SongTitle::PalaceTheme,
-      SongTitle::BossTheme,
-      SongTitle::PalaceItemFanfare,
-      SongTitle::CrystalFanfare});
+  commit(palace_song_table,
+         {SongTitle::PalaceIntro, SongTitle::PalaceTheme, SongTitle::BossTheme,
+          SongTitle::PalaceItemFanfare, SongTitle::CrystalFanfare});
 
-  commit(great_palace_song_table, {
-      SongTitle::GreatPalaceIntro,
-      SongTitle::GreatPalaceTheme,
-      SongTitle::ZeldaTheme,
-      SongTitle::CreditsTheme,
-      SongTitle::GreatPalaceItemFanfare,
-      SongTitle::TriforceFanfare,
-      SongTitle::FinalBossTheme});
+  commit(great_palace_song_table,
+         {SongTitle::GreatPalaceIntro, SongTitle::GreatPalaceTheme,
+          SongTitle::ZeldaTheme, SongTitle::CreditsTheme,
+          SongTitle::GreatPalaceItemFanfare, SongTitle::TriforceFanfare,
+          SongTitle::FinalBossTheme});
 
   credits_.commit(*this);
 
@@ -785,8 +784,8 @@ void Rom::save(const std::string& filename) {
   if (commit()) {
     std::ofstream file(filename, std::ios::binary);
     if (file.is_open()) {
-      file.write(reinterpret_cast<char *>(&header_[0]), kHeaderSize);
-      file.write(reinterpret_cast<char *>(&data_[0]), kRomSize);
+      file.write(reinterpret_cast<char*>(&header_[0]), kHeaderSize);
+      file.write(reinterpret_cast<char*>(&data_[0]), kRomSize);
     }
   }
 }
@@ -803,7 +802,9 @@ void Rom::move_song_table(size_t loader_address, uint16_t base_address) {
   } else if (loader_address == kGreatPalaceLoader) {
     great_palace_song_table = base_address + 0x010000;
   } else {
-    LOG(ERROR) << std::hex << std::setfill('0') << std::showbase << "Unsure what loader is at " << std::setw(6) << loader_address << ", need manual update";
+    LOG(ERROR) << std::hex << std::setfill('0') << std::showbase
+               << "Unsure what loader is at " << std::setw(6) << loader_address
+               << ", need manual update";
   }
 
   const uint16_t old_base = getw(loader_address + 1);
@@ -816,7 +817,9 @@ void Rom::move_song_table(size_t loader_address, uint16_t base_address) {
     if (byte == 0xb9) {
       const uint16_t addr = getw(loader_address + 1);
       const uint16_t new_addr = base_address + addr - old_base;
-      LOG(INFO) << std::hex << std::setfill('0') << std::noshowbase << "Found LDA, replacing " << std::setw(4) << addr << " with " << std::setw(4) << new_addr;
+      LOG(INFO) << std::hex << std::setfill('0') << std::noshowbase
+                << "Found LDA, replacing " << std::setw(4) << addr << " with "
+                << std::setw(4) << new_addr;
       putw(loader_address + 1, new_addr);
       loader_address += 3;
     } else if (byte == 0x4c) {
@@ -831,13 +834,9 @@ void Rom::move_song_table(size_t loader_address, uint16_t base_address) {
   }
 }
 
-Song* Rom::song(Rom::SongTitle title) {
-  return &songs_[title];
-}
+Song* Rom::song(Rom::SongTitle title) { return &songs_[title]; }
 
-Credits* Rom::credits() {
-  return &credits_;
-}
+Credits* Rom::credits() { return &credits_; }
 
 void Rom::commit(size_t address, std::vector<Rom::SongTitle> songs) {
   std::array<uint8_t, 8> table;
@@ -847,13 +846,13 @@ void Rom::commit(size_t address, std::vector<Rom::SongTitle> songs) {
   // which is a list of 8 (possibly duplicate) songs.  For now, it's just
   // hardcode which songs are where in each table.
   if (address == title_screen_table) {
-    table = {0, 1, 2, 3, 4, 5, 5, 5 };
+    table = {0, 1, 2, 3, 4, 5, 5, 5};
   } else if (address == overworld_song_table || address == town_song_table) {
-    table = {0, 1, 2, 2, 3, 4, 4, 4 };
+    table = {0, 1, 2, 2, 3, 4, 4, 4};
   } else if (address == palace_song_table) {
-    table = { 0, 1, 1, 2, 3, 5, 4, 5 };
+    table = {0, 1, 1, 2, 3, 5, 4, 5};
   } else if (address == great_palace_song_table) {
-    table = { 0, 1, 2, 3, 4, 5, 6, 7 };
+    table = {0, 1, 2, 3, 4, 5, 6, 7};
   } else {
     return;
   }
@@ -869,7 +868,9 @@ void Rom::commit(size_t address, std::vector<Rom::SongTitle> songs) {
   // Calculate song offset table
   for (auto s : songs) {
     offsets.push_back(offset);
-    LOG(INFO) << std::hex << std::setfill('0') << std::showbase << "Offset for next song: " << std::setw(2) << static_cast<uint32_t>(offset);
+    LOG(INFO) << std::hex << std::setfill('0') << std::showbase
+              << "Offset for next song: " << std::setw(2)
+              << static_cast<uint32_t>(offset);
     offset += songs_.at(s).sequence_length() + 1;
   }
 
@@ -895,14 +896,18 @@ void Rom::commit(size_t address, std::vector<Rom::SongTitle> songs) {
   for (auto s : songs) {
     const auto& song = songs_.at(s);
 
-    LOG(INFO) << std::hex << std::setfill('0') << std::showbase << "Writing seq at " << std::setw(2) << static_cast<uint32_t>(seq_offset) << " with pat at " << std::setw(2) << static_cast<uint32_t>(pat_offset);
+    LOG(INFO) << std::hex << std::setfill('0') << std::showbase
+              << "Writing seq at " << std::setw(2)
+              << static_cast<uint32_t>(seq_offset) << " with pat at "
+              << std::setw(2) << static_cast<uint32_t>(pat_offset);
     const std::vector<uint8_t> seq = song.sequence_data(pat_offset);
     write(address + seq_offset, seq);
 
     std::ostringstream output;
 
     output << std::hex << std::setfill('0') << std::showbase;
-    for (auto b : seq) output << std::setw(2) << static_cast<uint32_t>(b) << " ";
+    for (auto b : seq)
+      output << std::setw(2) << static_cast<uint32_t>(b) << " ";
     LOG(INFO) << output.str();
 
     for (size_t i = 0; i < song.pattern_count(); ++i) {
@@ -922,19 +927,23 @@ void Rom::commit(size_t address, std::vector<Rom::SongTitle> songs) {
   size_t note_address = pat_offset + address;
   pat_offset = first_pattern;
 
-  LOG(INFO) << std::hex << std::setfill('0') << std::showbase << "Note data to start at " << std::setw(6) << note_address;
+  LOG(INFO) << std::hex << std::setfill('0') << std::showbase
+            << "Note data to start at " << std::setw(6) << note_address;
 
   for (auto s : songs) {
     for (auto p : songs_.at(s).patterns()) {
       const std::vector<uint8_t> note_data = p.note_data();
       const std::vector<uint8_t> meta_data = p.meta_data(note_address);
 
-      LOG(INFO) << std::hex << std::setfill('0') << std::showbase << "Pattern at " << std::setw(6) << (address + pat_offset) << ", notes at " << std::setw(6) << note_address;
+      LOG(INFO) << std::hex << std::setfill('0') << std::showbase
+                << "Pattern at " << std::setw(6) << (address + pat_offset)
+                << ", notes at " << std::setw(6) << note_address;
       std::ostringstream output;
       output << std::hex << std::setfill('0') << std::noshowbase;
       for (size_t i = 0; i < meta_data.size(); i += 2) {
         output << std::setw(2) << static_cast<uint32_t>(meta_data[i]);
-        output << std::setw(2) << static_cast<uint32_t>(meta_data[i + 1]) << " ";
+        output << std::setw(2) << static_cast<uint32_t>(meta_data[i + 1])
+               << " ";
       }
       LOG(INFO) << output.str();
 
@@ -954,8 +963,11 @@ size_t Rom::get_song_table_address(size_t loader_address) const {
   // Add the bank offset to the address read
   const size_t addr = getw(loader_address + 1) + 0x10000;
 
-  LOG(INFO) << std::hex << std::setfill('0') << "Got address " << std::showbase << std::setw(6) << addr << ", from LSA $" << std::noshowbase << std::setw(4) << (addr & 0xffff) << ",y at " << std::showbase << std::setw(6) << loader_address;
+  LOG(INFO) << std::hex << std::setfill('0') << "Got address " << std::showbase
+            << std::setw(6) << addr << ", from LSA $" << std::noshowbase
+            << std::setw(4) << (addr & 0xffff) << ",y at " << std::showbase
+            << std::setw(6) << loader_address;
   return addr;
 }
 
-} // namespace z2music
+}  // namespace z2music

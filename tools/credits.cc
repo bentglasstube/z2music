@@ -1,6 +1,6 @@
-#include "music.h"
-
 #include <iostream>
+
+#include "music.h"
 
 int main(int argc, char** argv) {
   if (argc != 2) {
@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
 
   const std::string file = std::string(argv[1]);
   z2music::Rom rom(file);
-  const z2music::Credits *credits = rom.credits();
+  const z2music::Credits* credits = rom.credits();
 
   std::cout << "====================" << std::endl;
   for (size_t i = 0; i < 9; ++i) {
