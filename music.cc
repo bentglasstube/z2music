@@ -558,7 +558,8 @@ char z2_decode_(uint8_t data) {
   if (data >= 0xd0 && data <= 0xd9) return data - 0xa0;
   if (data >= 0xda && data <= 0xf3) return data - 0x99;
 
-  std::cerr << "Cannot decode byte '" << data << "'" << std::endl;
+  LOG(ERROR) << std::hex << std::setfill('0') << "Cannot decode byte '"
+             << std::setw(2) << data << "'";
 
   return 0x00;
 }
@@ -579,7 +580,7 @@ uint8_t z2_encode_(char data) {
   if (data >= 0x41 && data <= 0x5a) return data + 0x99;
   if (data >= 0x61 && data <= 0x7a) return data + 0x79;
 
-  std::cerr << "Cannot encode character '" << data << "'" << std::endl;
+  LOG(ERROR) << "Cannot encode character '" << data << "'";
 
   return 0x00;
 }
