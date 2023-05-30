@@ -942,8 +942,8 @@ void Rom::commit(size_t address, std::vector<Rom::SongTitle> songs) {
       std::ostringstream output;
       output << std::hex << std::setfill('0') << std::noshowbase;
       for (size_t i = 0; i < meta_data.size(); i += 2) {
-        output << std::setw(2) << static_cast<uint32_t>(meta_data[i]);
-        output << std::setw(2) << static_cast<uint32_t>(meta_data[i + 1])
+        output << std::setw(2) << static_cast<uint32_t>(meta_data[i])
+               << std::setw(2) << static_cast<uint32_t>(meta_data[i + 1])
                << " ";
       }
       LOG(INFO) << output.str();
