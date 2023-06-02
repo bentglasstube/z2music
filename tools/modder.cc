@@ -8,7 +8,7 @@
 #include "absl/flags/parse.h"
 #include "absl/flags/usage.h"
 #include "absl/log/log.h"
-#include "music.h"
+#include "rom.h"
 
 ABSL_FLAG(std::string, rom, "", "Path to the rom file to modify.");
 ABSL_FLAG(std::string, output, "", "Path where modified rom should be saved.");
@@ -154,6 +154,22 @@ void process_modfile(z2music::Rom& rom, std::istream& file) {
 
       song->set_sequence(sequence);
       LOG(INFO) << "Sequence set";
+
+    } else if (command == "pitch") {
+      // TODO set pitch of notes
+      // pitch LUT $918F
+      // pitch = 1789773 / (16 * (timer + 1))
+      // pitch * (16 * (timer + 1)) = 1789773
+      // (16 * (timer + 1)) = 1789773 / pitch
+      // timer + 1 = 1789773 / (16 * pitch)
+      // timer = 1789773 / (16 * pitch) -1
+
+      float pitch = 440.0f;
+      uint16_t timer = 1789773 / (16 * pitch) - 1;
+      uint8_t offset = 0x1e;
+
+      rom.putc(0x1918f + offset, timer >> 8);
+      rom.putc(0x1918f + offset + 1, timer & 0xff);
 
     } else {
       LOG(WARNING) << "Unknown keyword '" << command << "'";

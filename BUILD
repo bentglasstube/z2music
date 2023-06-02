@@ -1,9 +1,31 @@
 cc_library(
   name = "music",
-  srcs = [ "music.cc" ],
-  hdrs = [ "music.h" ],
   visibility = ["//visibility:public"],
+  hdrs = [
+    "credits.h",
+    "pattern.h",
+    "pitch.h",
+    "rom.h",
+    "song.h",
+  ],
+  srcs = [
+    "credits.cc",
+    "pattern.cc",
+    "pitch.cc",
+    "rom.cc",
+    "song.cc",
+  ],
   deps = [
+    ":note",
     "@com_google_absl//absl/log:log",
   ]
+)
+
+cc_library(
+  name = "note",
+  hdrs = ["note.h"],
+  srcs = ["note.cc"],
+  deps = [
+    "@com_google_absl//absl/log:log",
+  ],
 )
