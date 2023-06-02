@@ -17,7 +17,7 @@ cc_library(
   ],
   deps = [
     ":note",
-    "@com_google_absl//absl/log:log",
+    "@absl//absl/log:log",
   ]
 )
 
@@ -26,6 +26,6 @@ cc_library(
   hdrs = ["note.h"],
   srcs = ["note.cc"],
   deps = [
-    "@com_google_absl//absl/log:log",
+    "@absl//absl/log:log",
   ],
 )

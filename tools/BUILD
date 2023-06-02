@@ -9,10 +9,10 @@ cc_binary(
   srcs = ["modder.cc"],
   deps = [
     "//:music",
-    "@com_google_absl//absl/flags:flag",
-    "@com_google_absl//absl/flags:parse",
-    "@com_google_absl//absl/flags:usage",
-    "@com_google_absl//absl/log:log",
-    "@com_google_absl//absl/log:flags",
+    "@absl//absl/flags:flag",
+    "@absl//absl/flags:parse",
+    "@absl//absl/flags:usage",
+    "@absl//absl/log:log",
+    "@absl//absl/log:flags",
   ]
 )
