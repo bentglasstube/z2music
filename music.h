@@ -1,5 +1,5 @@
-#ifndef Z2UTIL_MUSIC_MUSIC
-#define Z2UTIL_MUSIC_MUSIC
+#ifndef Z2MUSIC_MUSIC
+#define Z2MUSIC_MUSIC
 
 #include <array>
 #include <cstdint>
@@ -12,6 +12,56 @@ namespace z2music {
 
 // Forward declaration since other classes refer to rom.
 class Rom;
+
+class Pitch {
+ public:
+  Pitch(uint16_t timer) : timer(timer) {}
+
+  uint16_t timer;
+  float freq() const { return timer_to_freq(timer); }
+  int midi() const {
+    return kMidiA4 + std::round(12.f * log(freq() - kFreqA4) / log(2.f));
+  }
+  std::string to_string() const;
+
+  static Pitch from_freq(float freq) { return Pitch(freq_to_timer(freq)); }
+
+  static uint16_t freq_to_timer(float freq) {
+    return static_cast<uint16_t>(std::round(kCPURate / (16 * freq) - 1));
+  }
+
+  static float timer_to_freq(uint16_t timer) {
+    return kCPURate / (16.0f * (timer + 1));
+  }
+
+  static Pitch from_midi(int midi);
+
+  enum class Midi {};
+
+ private:
+  static constexpr float kLog2 = std::log(2.f);
+  static constexpr float kFreqA4 = 440.f;
+  static constexpr int kMidiA4 = 69;
+  static constexpr std::string[] kStepNames = {
+      "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
+};
+
+class PitchLUT {
+ public:
+  PitchLUT() {}
+  PitchLUT(const Rom& rom, size_t address);
+
+  uint16_t value_for(Pitch pitch) const;
+  bool has_pitch(Pitch pitch) const;
+
+  uint16_t add_pitch(Pitch pitch);
+  void clear();
+
+ private:
+  static constexpr uint16_t kCPURate = 1789773;
+
+  std::map<Pitch, uint8_t> table_;
+};
 
 class Note {
  public:
@@ -283,4 +333,4 @@ inline uint8_t operator|(Note::Duration duration, Note::Pitch pitch) {
 
 }  // namespace z2music
 
-#endif  // define Z2UTIL_MUSIC_MUSIC
+#endif  // define Z2MUSIC_MUSIC

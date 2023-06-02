@@ -17,6 +17,24 @@ constexpr uint8_t to_byte(E e) noexcept {
   return static_cast<std::uint8_t>(e);
 }
 
+std::string Pitch::to_string() const {
+  const int note = midi();
+  const int octave = (note / 12) - 1;
+  return kStepNames[note % 12] + std::to_string(octave);
+}
+
+PitchLUT::PitchLUT(const Rom& rom, size_t address) {
+  for (size_t i = 0; i < 0x7a; i += 2) {
+    const uint16_t timer = rom->getw(address + i);
+    table_[PitchValue(timer)] = i;
+  }
+}
+
+uint8_t PitchLUT::value_for(PitchValue pitch) const {
+  auto it = table_.find(pitch);
+  return it == table_.end ? 0 : it->second;
+}
+
 Note::Note(uint8_t value) : value_(value) {}
 
 Note::Note(Duration d, Pitch p) : value_(to_byte(d) | to_byte(p)) {}
@@ -877,8 +895,8 @@ void Rom::commit(size_t address, std::vector<Rom::SongTitle> songs) {
 
   // One extra offset for the "empty" song at the end
   // We could save a whole byte by pointing this at the end of some other
-  // sequence but it's kind of nice to see the double 00 to mean the end of the
-  // sequence data.
+  // sequence but it's kind of nice to see the double 00 to mean the end of
+  // the sequence data.
   offsets.push_back(offset);
 
   // Write song table to ROM
