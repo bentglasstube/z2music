@@ -23,8 +23,11 @@ class Pitch {
   }
   std::string to_string() const;
 
-  /* bool operator==(Pitch other) const { return timer == other.timer; } */
+  bool operator==(Pitch other) const { return timer == other.timer; }
   bool operator<(Pitch other) const { return timer < other.timer; }
+  bool operator>(Pitch other) const { return timer > other.timer; }
+  bool operator<=(Pitch other) const { return timer <= other.timer; }
+  bool operator>=(Pitch other) const { return timer >= other.timer; }
 
   static Pitch from_freq(float freq) { return Pitch(freq_to_timer(freq)); }
 
