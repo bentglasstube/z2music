@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "absl/log/log.h"
 #include "rom.h"
 
 namespace z2music {
@@ -17,10 +18,6 @@ class Pitch {
   Pitch(uint16_t timer) : timer(timer) {}
 
   uint16_t timer;
-  float freq() const { return timer_to_freq(timer); }
-  int midi() const {
-    return kMidiA4 + std::round(12.f * log(freq() - kFreqA4) / log(2.f));
-  }
   std::string to_string() const;
 
   bool operator==(Pitch other) const { return timer == other.timer; }
@@ -29,17 +26,22 @@ class Pitch {
   bool operator<=(Pitch other) const { return timer <= other.timer; }
   bool operator>=(Pitch other) const { return timer >= other.timer; }
 
-  static Pitch from_freq(float freq) { return Pitch(freq_to_timer(freq)); }
-
-  static uint16_t freq_to_timer(float freq) {
-    return static_cast<uint16_t>(std::round(kCPURate / (16 * freq) - 1));
+  float freq() const { return kCPURate / (16.0f * (timer + 1)); }
+  static Pitch from_freq(float freq) {
+    int timer = static_cast<uint16_t>(std::round(kCPURate / (16 * freq) - 1));
+    LOG(INFO) << "Calculated timer for frequency " << freq << " as " << timer;
+    return Pitch(timer);
   }
 
-  static float timer_to_freq(uint16_t timer) {
-    return kCPURate / (16.0f * (timer + 1));
+  int midi() const {
+    return kMidiA4 + std::round(12 * log(freq() / kFreqA4) / kLog2);
   }
-
-  static Pitch from_midi(int midi);
+  static Pitch from_midi(int midi) {
+    float freq = pow(2.f, (midi - kMidiA4) / 12.f) * 440.f;
+    LOG(INFO) << "Calculated frequency for midi note " << midi << " as "
+              << freq;
+    return from_freq(freq);
+  }
 
   enum class Midi {};
 

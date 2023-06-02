@@ -29,3 +29,12 @@ cc_library(
     "@absl//absl/log:log",
   ],
 )
+
+cc_test(
+  name = "pitch_test",
+  srcs = ["pitch_test.cc"],
+  deps = [
+    ":music",
+    "@googletest//:gtest_main",
+  ],
+)
