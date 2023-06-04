@@ -37,4 +37,5 @@ cc_test(
     ":music",
     "@googletest//:gtest_main",
   ],
+  size = 'small',
 )
