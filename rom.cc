@@ -53,6 +53,7 @@ Rom::Rom(const std::string& filename) {
     songs_[SongTitle::FinalBossTheme] = Song(*this, great_palace_song_table, 6);
 
     credits_ = Credits(*this);
+    pitch_lut_ = PitchLUT(*this, kPitchLUTAddress);
   }
 }
 
@@ -63,6 +64,10 @@ uint8_t Rom::getc(size_t address) const {
 
 uint16_t Rom::getw(size_t address) const {
   return getc(address) + (getc(address + 1) << 8);
+}
+
+uint16_t Rom::getwr(size_t address) const {
+  return (getc(address) << 8) + getc(address + 1);
 }
 
 void Rom::read(uint8_t* buffer, size_t address, size_t length) const {
@@ -113,6 +118,7 @@ bool Rom::commit() {
           SongTitle::FinalBossTheme});
 
   credits_.commit(*this);
+  pitch_lut_.commit(*this, kPitchLUTAddress);
 
   return true;
 }
@@ -170,10 +176,6 @@ void Rom::move_song_table(size_t loader_address, uint16_t base_address) {
     }
   }
 }
-
-Song* Rom::song(Rom::SongTitle title) { return &songs_[title]; }
-
-Credits* Rom::credits() { return &credits_; }
 
 void Rom::commit(size_t address, std::vector<Rom::SongTitle> songs) {
   std::array<uint8_t, 8> table;

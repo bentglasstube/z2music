@@ -14,5 +14,13 @@ cc_binary(
     "@absl//absl/flags:usage",
     "@absl//absl/log:log",
     "@absl//absl/log:flags",
-  ]
+  ],
+)
+
+cc_binary(
+  name = "pitch_dump",
+  srcs = ["pitch_dump.cc"],
+  deps = [
+    "//:music",
+  ],
 )

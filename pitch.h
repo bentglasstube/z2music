@@ -9,9 +9,10 @@
 #include <string>
 
 #include "absl/log/log.h"
-#include "rom.h"
 
 namespace z2music {
+
+class Rom;
 
 class Pitch {
  public:
@@ -67,6 +68,8 @@ class Pitch {
     return from_freq(freq);
   }
 
+  static Pitch none() { return Pitch(0); }
+
  private:
   static constexpr float kLog2 = std::log(2.f);
   static constexpr float kFreqA4 = 440.f;
@@ -80,11 +83,14 @@ class PitchLUT {
   PitchLUT() {}
   PitchLUT(const Rom& rom, size_t address);
 
-  uint8_t value_for(Pitch pitch) const;
+  uint8_t index_for(Pitch pitch) const;
+  Pitch at(uint8_t index) const;
   bool has_pitch(Pitch pitch) const;
 
   uint16_t add_pitch(Pitch pitch);
   void clear();
+
+  void commit(Rom& rom, size_t address) const;
 
  private:
   std::map<Pitch, uint8_t> table_;

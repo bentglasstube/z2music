@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "credits.h"
+#include "pitch.h"
 #include "song.h"
 
 namespace z2music {
@@ -56,6 +57,7 @@ class Rom {
 
   uint8_t getc(size_t address) const;
   uint16_t getw(size_t address) const;
+  uint16_t getwr(size_t address) const;
 
   void putc(size_t address, uint8_t data);
   void putw(size_t address, uint16_t data);
@@ -67,12 +69,14 @@ class Rom {
   void save(const std::string& filename);
   void move_song_table(size_t loader_address, uint16_t base_address);
 
-  Song* song(SongTitle title);
-  Credits* credits();
+  Song* song(SongTitle title) { return &songs_[title]; }
+  Credits* credits() { return &credits_; }
+  PitchLUT* pitch_lut() { return &pitch_lut_; }
 
  private:
   static constexpr size_t kHeaderSize = 0x10;
   static constexpr size_t kRomSize = 0x040000;
+  static constexpr size_t kPitchLUTAddress = 0x01918f;
 
   uint8_t header_[kHeaderSize];
   uint8_t data_[kRomSize];
@@ -85,6 +89,7 @@ class Rom {
 
   std::unordered_map<SongTitle, Song> songs_;
   Credits credits_;
+  PitchLUT pitch_lut_;
 
   void commit(size_t address, std::vector<SongTitle> songs);
   size_t get_song_table_address(size_t loader_address) const;
