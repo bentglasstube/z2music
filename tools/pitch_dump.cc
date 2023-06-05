@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
     std::cout << "    " << std::setfill('0') << std::setw(2) << i;
   }
   std::cout << std::endl;
-  for (size_t i = 0x00; i < 0x7a; i += 2) {
+  for (size_t i = 0x00; i < 0x80; i += 2) {
     if (i % 0x10 == 0) {
       std::cout << std::setfill('0') << std::setw(2) << i;
     }
