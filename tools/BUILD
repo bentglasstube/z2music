@@ -22,5 +22,8 @@ cc_binary(
   srcs = ["pitch_dump.cc"],
   deps = [
     "//:music",
+    "@absl//absl/flags:parse",
+    "@absl//absl/flags:usage",
+    "@absl//absl/log:flags",
   ],
 )
