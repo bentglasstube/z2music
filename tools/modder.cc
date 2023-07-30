@@ -77,6 +77,13 @@ z2music::Song* get_song_by_name(z2music::Rom& rom, const std::string& name) {
   return nullptr;
 }
 
+void rtrim(std::string& str) {
+  str.erase(std::find_if(str.rbegin(), str.rend(),
+                         [](unsigned char c) { return !std::isspace(c); })
+                .base(),
+            str.end());
+}
+
 void process_modfile(z2music::Rom& rom, std::istream& file) {
   int transpose = 0;
   size_t patterns = 0;
@@ -86,13 +93,16 @@ void process_modfile(z2music::Rom& rom, std::istream& file) {
   std::string line;
   size_t line_number = 0;
   while (std::getline(file, line)) {
+    rtrim(line);
     ++line_number;
+
+    if (line == "") continue;
+
     std::istringstream input(line);
     std::string command;
 
     if (!(input >> command)) {
-      LOG(ERROR) << "Could not parse line: " << line;
-      continue;
+      LOG(FATAL) << "Could not parse line: " << line;
     }
 
     if (command == "song") {
@@ -101,7 +111,7 @@ void process_modfile(z2music::Rom& rom, std::istream& file) {
         LOG(FATAL) << "Song requires name";
       }
 
-      if (song && !sequenced) {
+      if (song && !sequenced && patterns > 0) {
         LOG(WARNING) << "Song changed without setting sequence";
       }
       song = get_song_by_name(rom, name);
@@ -128,13 +138,25 @@ void process_modfile(z2music::Rom& rom, std::istream& file) {
         LOG(FATAL) << "Pattern requires tempo";
       }
 
-      song->add_pattern({
-          static_cast<uint8_t>(tempo & 0xff),
-          z2music::Pattern::parse_notes(read_line(file)),
-          z2music::Pattern::parse_notes(read_line(file)),
-          z2music::Pattern::parse_notes(read_line(file)),
-          z2music::Pattern::parse_notes(read_line(file)),
-      });
+      uint32_t tempo2;
+      if (input >> std::hex >> tempo2) {
+        song->add_pattern({
+            static_cast<uint8_t>(tempo & 0xff),
+            static_cast<uint8_t>(tempo2 & 0xff),
+            z2music::Pattern::parse_notes(read_line(file)),
+            z2music::Pattern::parse_notes(read_line(file)),
+            z2music::Pattern::parse_notes(read_line(file)),
+            z2music::Pattern::parse_notes(read_line(file)),
+        });
+      } else {
+        song->add_pattern({
+            static_cast<uint8_t>(tempo & 0xff),
+            z2music::Pattern::parse_notes(read_line(file)),
+            z2music::Pattern::parse_notes(read_line(file)),
+            z2music::Pattern::parse_notes(read_line(file)),
+            z2music::Pattern::parse_notes(read_line(file)),
+        });
+      }
 
       ++patterns;
       LOG(INFO) << "Added pattern " << patterns;
