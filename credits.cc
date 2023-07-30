@@ -64,7 +64,7 @@ std::string parse_string_(const Rom& rom, size_t address) {
     s.append(1, z2_decode_(rom.getc(address + i + 3)));
   }
 
-  LOG(INFO) << std::hex << std::setfill('0') << std::showbase
+  LOG(INFO) << std::hex << std::showbase << std::setfill('0')
             << "Found string at " << std::setw(6) << address << " - [" << s
             << "]";
 
