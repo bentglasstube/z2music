@@ -91,7 +91,8 @@ void process_modfile(z2music::Rom& rom, std::istream& file) {
     std::string command;
 
     if (!(input >> command)) {
-      LOG(FATAL) << "Could not parse line: " << line;
+      LOG(ERROR) << "Could not parse line: " << line;
+      continue;
     }
 
     if (command == "song") {
