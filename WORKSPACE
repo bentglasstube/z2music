@@ -1,4 +1,6 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+
 http_archive(
   name = "absl",
   urls = ["https://github.com/abseil/abseil-cpp/archive/refs/tags/20230125.3.zip"],
@@ -18,3 +20,12 @@ http_archive(
   strip_prefix = "googletest-5ab508a01f9eb089207ee87fd547d290da39d015",
   sha256 = "755f9a39bc7205f5a0c428e920ddad092c33c8a1b46997def3f1d4a82aded6e1",
 )
+
+git_repository(
+  name = "crt",
+  remote = "https://github.com/cfrantz/crt",
+  commit = "fbbef7537f6a43311b5ac02a2a91cbdf4fc032a9",
+)
+
+load("@crt//config:registration.bzl", "crt_register_toolchains")
+crt_register_toolchains(win64 = True)

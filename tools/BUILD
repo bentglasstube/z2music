@@ -1,3 +1,5 @@
+load("@crt//rules:transition.bzl", "platform_target")
+
 cc_binary(
   name = "credits",
   srcs = ["credits.cc"],
@@ -15,6 +17,18 @@ cc_binary(
     "@absl//absl/log:log",
     "@absl//absl/log:flags",
   ],
+  linkopts = select({
+    "//:windows": [
+      "-ldbghelp",
+    ],
+    "//conditions:default": [],
+  }),
+)
+
+platform_target(
+  name = "modder-windows",
+  platform = "@crt//platforms/x86_64:win64",
+  target = ":modder",
 )
 
 cc_binary(

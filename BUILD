@@ -1,3 +1,10 @@
+config_setting(
+  name = "windows",
+  constraint_values = [
+    "@platforms//os:windows",
+  ],
+)
+
 cc_library(
   name = "music",
   visibility = ["//visibility:public"],

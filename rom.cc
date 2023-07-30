@@ -1,6 +1,7 @@
 #include "rom.h"
 
 #include <fstream>
+#include <iomanip>
 
 #include "absl/log/log.h"
 
