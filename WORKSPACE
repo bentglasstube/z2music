@@ -3,6 +3,7 @@ http_archive(
   name = "absl",
   urls = ["https://github.com/abseil/abseil-cpp/archive/refs/tags/20230125.3.zip"],
   strip_prefix = "abseil-cpp-20230125.3",
+  sha256 = "51d676b6846440210da48899e4df618a357e6e44ecde7106f1e44ea16ae8adc7",
 )
 
 http_archive(
@@ -15,4 +16,5 @@ http_archive(
   name = "googletest",
   urls = ["https://github.com/google/googletest/archive/5ab508a01f9eb089207ee87fd547d290da39d015.zip"],
   strip_prefix = "googletest-5ab508a01f9eb089207ee87fd547d290da39d015",
+  sha256 = "755f9a39bc7205f5a0c428e920ddad092c33c8a1b46997def3f1d4a82aded6e1",
 )
