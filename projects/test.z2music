@@ -1,0 +1,15 @@
+Song OverworldIntro
+pattern 0x18
+r.8 e5
+r.4 c5.8 r.4
+a4.8 r
+r.8 r
+sequence 1
+
+Song OverworldTheme
+pattern 0x18
+a4.4 c5 e5 a5
+r.4 r r r
+r.4 r r r
+r.4 r r r
+sequence 1
