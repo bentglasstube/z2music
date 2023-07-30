@@ -61,6 +61,7 @@ class Rom {
 
   void putc(size_t address, uint8_t data);
   void putw(size_t address, uint16_t data);
+  void putwr(size_t address, uint16_t data);
 
   void read(uint8_t* buffer, size_t address, size_t length) const;
   void write(size_t address, std::vector<uint8_t> data);

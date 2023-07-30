@@ -89,6 +89,11 @@ void Rom::putw(size_t address, uint16_t data) {
   putc(address + 1, data >> 8);
 }
 
+void Rom::putwr(size_t address, uint16_t data) {
+  putc(address, data >> 8);
+  putc(address + 1, data & 0xff);
+}
+
 void Rom::write(size_t address, std::vector<uint8_t> data) {
   for (size_t i = 0; i < data.size(); ++i) {
     putc(address + i, data[i]);

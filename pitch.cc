@@ -40,7 +40,7 @@ Pitch PitchLUT::at(uint8_t index) const {
 
 void PitchLUT::commit(Rom& rom, size_t address) const {
   for (const auto t : table_) {
-    rom.putw(address + t.second, t.first.timer);
+    rom.putwr(address + t.second, t.first.timer);
   }
   return;
 }
