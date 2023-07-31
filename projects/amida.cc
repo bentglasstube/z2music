@@ -1,6 +1,7 @@
 #include <iostream>
 
-#include "music.h"
+#include "rom.h"
+#include "song.h"
 
 void set_title_intro(z2music::Song* title) {
   title->clear();

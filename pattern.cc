@@ -64,10 +64,6 @@ std::vector<Note> Pattern::notes(Pattern::Channel ch) const {
   return notes_.at(ch);
 }
 
-void Pattern::tempo(uint8_t tempo) { tempo_ = tempo; }
-
-uint8_t Pattern::tempo() const { return tempo_; }
-
 bool Pattern::validate() const {
   // TODO validate pattern
 
@@ -78,12 +74,6 @@ bool Pattern::validate() const {
 
   return true;
 }
-
-bool Pattern::voiced() const { return tempo_ == 0x00; }
-
-uint8_t Pattern::voice1() const { return voice1_; }
-
-uint8_t Pattern::voice2() const { return voice2_; }
 
 void Pattern::set_voicing(uint8_t v1, uint8_t v2) {
   tempo_ = 0x00;

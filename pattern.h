@@ -31,14 +31,14 @@ class Pattern {
   std::vector<Note> notes(Channel ch) const;
 
   // TODO figure out if the tempo values are meaningful
-  void tempo(uint8_t tempo);
-  uint8_t tempo() const;
+  void tempo(uint8_t tempo) { tempo_ = tempo; }
+  uint8_t tempo() const { return tempo_; }
 
   bool validate() const;
 
-  bool voiced() const;
-  uint8_t voice1() const;
-  uint8_t voice2() const;
+  bool voiced() const { return tempo_ == 0x00; }
+  uint8_t voice1() const { return voice1_; }
+  uint8_t voice2() const { return voice2_; }
 
   void set_voicing(uint8_t v1, uint8_t v2);
 

@@ -13,8 +13,6 @@ constexpr uint8_t to_byte(E e) noexcept {
 
 }  // namespace
 
-Note::Note(uint8_t value) : value_(value) {}
-
 Note::Note(Duration d, Pitch p) : value_(to_byte(d) | to_byte(p)) {}
 
 Note Note::from_midi(int note, int ticks) {
@@ -29,15 +27,9 @@ Note Note::from_midi(int note, int ticks) {
   return kMidiPitchMap.at(note) | kMidiDurationMap.at(ticks);
 }
 
-Note::Duration Note::duration() const {
-  return static_cast<Duration>(value_ & 0xc1);
-}
-
 void Note::duration(Note::Duration d) {
   value_ = to_byte(d) | to_byte(pitch());
 }
-
-Note::Pitch Note::pitch() const { return static_cast<Pitch>(value_ & 0x3e); }
 
 void Note::pitch(Note::Pitch p) { value_ = to_byte(duration()) | to_byte(p); }
 
@@ -60,78 +52,105 @@ size_t Note::length() const {
       return 96;
     case Duration::QuarterTriplet:
       return 96 * 2 / 3;
-  }
 
-  return 0;
+    default:
+      return 0;
+  }
 }
 
 std::string Note::pitch_string() const {
   switch (pitch()) {
     case Pitch::Rest:
-      return "---.";
+      return "r";
+    case Pitch::C3:
+      return "C3";
     case Pitch::Cs3:
-      return "C#3.";
+      return "C#3";
     case Pitch::E3:
-      return "E3..";
+      return "E3";
     case Pitch::G3:
-      return "G3..";
+      return "G3";
     case Pitch::Gs3:
-      return "G#3.";
+      return "G#3";
     case Pitch::A3:
-      return "A3..";
+      return "A3";
     case Pitch::As3:
-      return "A#3.";
+      return "A#3";
     case Pitch::B3:
-      return "B3..";
+      return "B3";
     case Pitch::C4:
-      return "C4..";
+      return "C4";
     case Pitch::Cs4:
-      return "C#4.";
+      return "C#4";
     case Pitch::D4:
-      return "D4..";
+      return "D4";
     case Pitch::Ds4:
-      return "D#4.";
+      return "D#4";
     case Pitch::E4:
-      return "E4..";
+      return "E4";
     case Pitch::F4:
-      return "F4..";
+      return "F4";
     case Pitch::Fs4:
-      return "F#4.";
+      return "F#4";
     case Pitch::G4:
-      return "G4..";
+      return "G4";
     case Pitch::Gs4:
-      return "G#4.";
+      return "G#4";
     case Pitch::A4:
-      return "A4..";
+      return "A4";
     case Pitch::As4:
-      return "A#4.";
+      return "A#4";
     case Pitch::B4:
-      return "B4..";
+      return "B4";
     case Pitch::C5:
-      return "C5..";
+      return "C5";
     case Pitch::Cs5:
-      return "C#5.";
+      return "C#5";
     case Pitch::D5:
-      return "D5..";
+      return "D5";
     case Pitch::Ds5:
-      return "D#5.";
+      return "D#5";
     case Pitch::E5:
-      return "E5..";
+      return "E5";
     case Pitch::F5:
-      return "F5..";
+      return "F5";
     case Pitch::Fs5:
-      return "F#5.";
+      return "F#5";
     case Pitch::G5:
-      return "G5..";
+      return "G5";
     case Pitch::A5:
-      return "A5..";
+      return "A5";
     case Pitch::As5:
-      return "A#5.";
+      return "A#5";
     case Pitch::B5:
-      return "B5..";
-  }
+      return "B5";
 
-  return "???.";
+    default:
+      return "?" + std::to_string(static_cast<int>(pitch()));
+  }
+}
+
+std::string Note::duration_string() const {
+  switch (duration()) {
+    case Duration::Sixteenth:
+      return "1";
+    case Duration::DottedQuarter:
+      return "6";
+    case Duration::DottedEighth:
+      return "3";
+    case Duration::Half:
+      return "8";
+    case Duration::Eighth:
+      return "2";
+    case Duration::EighthTriplet:
+      return "t2";
+    case Duration::Quarter:
+      return "4";
+    case Duration::QuarterTriplet:
+      return "t4";
+    default:
+      return "?";
+  }
 }
 
 Note::operator uint8_t() const { return value_; }

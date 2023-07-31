@@ -1,6 +1,7 @@
 #include <iostream>
 
-#include "music.h"
+#include "credits.h"
+#include "rom.h"
 
 int main(int argc, char** argv) {
   if (argc != 2) {

@@ -1,8 +1,8 @@
 load("@crt//rules:transition.bzl", "platform_target")
 
 cc_binary(
-  name = "credits",
-  srcs = ["credits.cc"],
+  name = "credits_dump",
+  srcs = ["credits_dump.cc"],
   deps = ["//:music"],
 )
 
@@ -32,8 +32,8 @@ platform_target(
 )
 
 cc_binary(
-  name = "pitch_dump",
-  srcs = ["pitch_dump.cc"],
+  name = "music_dump",
+  srcs = ["music_dump.cc"],
   deps = [
     "//:music",
     "@absl//absl/flags:parse",
@@ -43,8 +43,8 @@ cc_binary(
 )
 
 cc_binary(
-  name = "music_dump",
-  srcs = ["music_dump.cc"],
+  name = "pitch_dump",
+  srcs = ["pitch_dump.cc"],
   deps = [
     "//:music",
     "@absl//absl/flags:parse",
