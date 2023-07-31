@@ -302,6 +302,7 @@ void Rom::commit(size_t address, std::vector<Rom::SongTitle> songs) {
 }
 
 namespace {
+
 Rom::SongTitle song_by_name(const std::string& name) {
   if (name == "TitleIntro") return Rom::SongTitle::TitleIntro;
   if (name == "TitleThemeStart") return Rom::SongTitle::TitleThemeStart;
@@ -333,7 +334,10 @@ Rom::SongTitle song_by_name(const std::string& name) {
     return Rom::SongTitle::GreatPalaceItemFanfare;
   if (name == "TriforceFanfare") return Rom::SongTitle::TriforceFanfare;
   if (name == "FinalBossTheme") return Rom::SongTitle::FinalBossTheme;
+
+  return Rom::SongTitle::Unknown;
 }
+
 }  // namespace
 
 Song* Rom::song(const std::string& name) {

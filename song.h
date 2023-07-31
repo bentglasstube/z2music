@@ -27,6 +27,7 @@ class Song {
   size_t metadata_length() const;
 
   void clear();
+  bool empty() const { return patterns_.empty(); }
 
   std::vector<Pattern> patterns() { return patterns_; }
   const std::vector<Pattern> patterns() const { return patterns_; }
