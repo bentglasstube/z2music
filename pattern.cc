@@ -15,6 +15,11 @@ Pattern::Pattern(const Rom& rom, size_t address) {
 
   tempo_ = header[0];
 
+  if (tempo_ == 0x00) {
+    voice1_ = rom.getc(address + 6);
+    voice2_ = rom.getc(address + 7);
+  }
+
   size_t note_base = (header[2] << 8) + header[1] + 0x10000;
 
   read_notes(Channel::Pulse1, rom, note_base);
