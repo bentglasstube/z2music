@@ -28,10 +28,13 @@ class Song {
 
   void clear();
 
-  std::vector<Pattern> patterns();
+  std::vector<Pattern> patterns() { return patterns_; }
+  const std::vector<Pattern> patterns() const { return patterns_; }
 
   Pattern* at(size_t i);
   const Pattern* at(size_t i) const;
+
+  const std::vector<size_t> sequence() const { return sequence_; }
 
  private:
   std::vector<Pattern> patterns_;

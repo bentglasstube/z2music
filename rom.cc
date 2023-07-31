@@ -301,6 +301,53 @@ void Rom::commit(size_t address, std::vector<Rom::SongTitle> songs) {
   }
 }
 
+namespace {
+Rom::SongTitle song_by_name(const std::string& name) {
+  if (name == "TitleIntro") return Rom::SongTitle::TitleIntro;
+  if (name == "TitleThemeStart") return Rom::SongTitle::TitleThemeStart;
+  if (name == "TitleThemeBuildup") return Rom::SongTitle::TitleThemeBuildup;
+  if (name == "TitleThemeMain") return Rom::SongTitle::TitleThemeMain;
+  if (name == "TitleThemeBreakdown") return Rom::SongTitle::TitleThemeBreakdown;
+
+  if (name == "OverworldIntro") return Rom::SongTitle::OverworldIntro;
+  if (name == "OverworldTheme") return Rom::SongTitle::OverworldTheme;
+  if (name == "BattleTheme") return Rom::SongTitle::BattleTheme;
+  if (name == "CaveItemFanfare") return Rom::SongTitle::CaveItemFanfare;
+
+  if (name == "TownIntro") return Rom::SongTitle::TownIntro;
+  if (name == "TownTheme") return Rom::SongTitle::TownTheme;
+  if (name == "HouseTheme") return Rom::SongTitle::HouseTheme;
+  if (name == "TownItemFanfare") return Rom::SongTitle::TownItemFanfare;
+
+  if (name == "PalaceIntro") return Rom::SongTitle::PalaceIntro;
+  if (name == "PalaceTheme") return Rom::SongTitle::PalaceTheme;
+  if (name == "BossTheme") return Rom::SongTitle::BossTheme;
+  if (name == "PalaceItemFanfare") return Rom::SongTitle::PalaceItemFanfare;
+  if (name == "CrystalFanfare") return Rom::SongTitle::CrystalFanfare;
+
+  if (name == "GreatPalaceIntro") return Rom::SongTitle::GreatPalaceIntro;
+  if (name == "GreatPalaceTheme") return Rom::SongTitle::GreatPalaceTheme;
+  if (name == "ZeldaTheme") return Rom::SongTitle::ZeldaTheme;
+  if (name == "CreditsTheme") return Rom::SongTitle::CreditsTheme;
+  if (name == "GreatPalaceItemFanfare")
+    return Rom::SongTitle::GreatPalaceItemFanfare;
+  if (name == "TriforceFanfare") return Rom::SongTitle::TriforceFanfare;
+  if (name == "FinalBossTheme") return Rom::SongTitle::FinalBossTheme;
+}
+}  // namespace
+
+Song* Rom::song(const std::string& name) {
+  SongTitle title = song_by_name(name);
+  if (title == SongTitle::Unknown) return nullptr;
+  return song(title);
+}
+
+const Song* Rom::song(const std::string& name) const {
+  SongTitle title = song_by_name(name);
+  if (title == SongTitle::Unknown) return nullptr;
+  return song(title);
+}
+
 size_t Rom::get_song_table_address(size_t loader_address) const {
   // Ensure that we are seing an LDA $addr,y instruction
   assert(getc(loader_address) == 0xb9);

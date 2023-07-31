@@ -16,6 +16,8 @@ namespace z2music {
 class Rom {
  public:
   enum class SongTitle {
+    Unknown,
+
     TitleIntro,
     TitleThemeStart,
     TitleThemeBuildup,
@@ -70,7 +72,10 @@ class Rom {
   void save(const std::string& filename);
   void move_song_table(size_t loader_address, uint16_t base_address);
 
+  Song* song(const std::string& name);
+  const Song* song(const std::string& name) const;
   Song* song(SongTitle title) { return &songs_[title]; }
+  const Song* song(SongTitle title) const { return &songs_.at(title); }
   Credits* credits() { return &credits_; }
   PitchLUT* pitch_lut() { return &pitch_lut_; }
 

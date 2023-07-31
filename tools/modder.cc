@@ -20,61 +20,9 @@ std::string read_line(std::istream& file) {
 }
 
 z2music::Song* get_song_by_name(z2music::Rom& rom, const std::string& name) {
-  if (name == "TitleIntro")
-    return rom.song(z2music::Rom::SongTitle::TitleIntro);
-  if (name == "TitleThemeStart")
-    return rom.song(z2music::Rom::SongTitle::TitleThemeStart);
-  if (name == "TitleThemeBuildup")
-    return rom.song(z2music::Rom::SongTitle::TitleThemeBuildup);
-  if (name == "TitleThemeMain")
-    return rom.song(z2music::Rom::SongTitle::TitleThemeMain);
-  if (name == "TitleThemeBreakdown")
-    return rom.song(z2music::Rom::SongTitle::TitleThemeBreakdown);
-
-  if (name == "OverworldIntro")
-    return rom.song(z2music::Rom::SongTitle::OverworldIntro);
-  if (name == "OverworldTheme")
-    return rom.song(z2music::Rom::SongTitle::OverworldTheme);
-  if (name == "BattleTheme")
-    return rom.song(z2music::Rom::SongTitle::BattleTheme);
-  if (name == "CaveItemFanfare")
-    return rom.song(z2music::Rom::SongTitle::CaveItemFanfare);
-
-  if (name == "TownIntro") return rom.song(z2music::Rom::SongTitle::TownIntro);
-  if (name == "TownTheme") return rom.song(z2music::Rom::SongTitle::TownTheme);
-  if (name == "HouseTheme")
-    return rom.song(z2music::Rom::SongTitle::HouseTheme);
-  if (name == "TownItemFanfare")
-    return rom.song(z2music::Rom::SongTitle::TownItemFanfare);
-
-  if (name == "PalaceIntro")
-    return rom.song(z2music::Rom::SongTitle::PalaceIntro);
-  if (name == "PalaceTheme")
-    return rom.song(z2music::Rom::SongTitle::PalaceTheme);
-  if (name == "BossTheme") return rom.song(z2music::Rom::SongTitle::BossTheme);
-  if (name == "PalaceItemFanfare")
-    return rom.song(z2music::Rom::SongTitle::PalaceItemFanfare);
-  if (name == "CrystalFanfare")
-    return rom.song(z2music::Rom::SongTitle::CrystalFanfare);
-
-  if (name == "GreatPalaceIntro")
-    return rom.song(z2music::Rom::SongTitle::GreatPalaceIntro);
-  if (name == "GreatPalaceTheme")
-    return rom.song(z2music::Rom::SongTitle::GreatPalaceTheme);
-  if (name == "ZeldaTheme")
-    return rom.song(z2music::Rom::SongTitle::ZeldaTheme);
-  if (name == "CreditsTheme")
-    return rom.song(z2music::Rom::SongTitle::CreditsTheme);
-  if (name == "GreatPalaceItemFanfare")
-    return rom.song(z2music::Rom::SongTitle::GreatPalaceItemFanfare);
-  if (name == "TriforceFanfare")
-    return rom.song(z2music::Rom::SongTitle::TriforceFanfare);
-  if (name == "FinalBossTheme")
-    return rom.song(z2music::Rom::SongTitle::FinalBossTheme);
-
-  LOG(FATAL) << "Unknown song name " << name;
-
-  return nullptr;
+  auto song = rom.song(name);
+  if (!song) LOG(FATAL) << "Unknown song name " << name;
+  return song;
 }
 
 void rtrim(std::string& str) {

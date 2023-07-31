@@ -41,3 +41,14 @@ cc_binary(
     "@absl//absl/log:flags",
   ],
 )
+
+cc_binary(
+  name = "music_dump",
+  srcs = ["music_dump.cc"],
+  deps = [
+    "//:music",
+    "@absl//absl/flags:parse",
+    "@absl//absl/flags:usage",
+    "@absl//absl/log:flags",
+  ],
+)

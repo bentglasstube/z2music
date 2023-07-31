@@ -71,8 +71,6 @@ void Song::clear() {
   sequence_.clear();
 }
 
-std::vector<Pattern> Song::patterns() { return patterns_; }
-
 Pattern* Song::at(size_t i) {
   if (i < 0 || i >= sequence_.size()) return nullptr;
   return &(patterns_.at(sequence_.at(i)));
