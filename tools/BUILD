@@ -26,7 +26,7 @@ cc_binary(
 )
 
 platform_target(
-  name = "modder-windows",
+  name = "modder_windows",
   platform = "@crt//platforms/x86_64:win64",
   target = ":modder",
 )
@@ -40,6 +40,18 @@ cc_binary(
     "@absl//absl/flags:usage",
     "@absl//absl/log:flags",
   ],
+  linkopts = select({
+    "//:windows": [
+      "-ldbghelp",
+    ],
+    "//conditions:default": [],
+  }),
+)
+
+platform_target(
+  name = "music_dump_windows",
+  platform = "@crt//platforms/x86_64:win64",
+  target = ":music_dump",
 )
 
 cc_binary(
