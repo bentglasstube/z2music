@@ -7,8 +7,8 @@ namespace z2music {
 namespace {
 
 template <typename E>
-constexpr uint8_t to_byte(E e) noexcept {
-  return static_cast<std::uint8_t>(e);
+constexpr byte to_byte(E e) noexcept {
+  return byte(static_cast<std::uint8_t>(e));
 }
 
 }  // namespace
@@ -24,7 +24,7 @@ Note Note::from_midi(int note, int ticks) {
     LOG(FATAL) << "Duration " << ticks << " is not usable";
   }
 
-  return kMidiPitchMap.at(note) | kMidiDurationMap.at(ticks);
+  return byte(kMidiPitchMap.at(note) | kMidiDurationMap.at(ticks));
 }
 
 void Note::duration(Note::Duration d) {
@@ -33,7 +33,7 @@ void Note::duration(Note::Duration d) {
 
 void Note::pitch(Note::Pitch p) { value_ = to_byte(duration()) | to_byte(p); }
 
-size_t Note::length() const {
+int Note::length() const {
   // MIDI generally uses 96 ppqn, so we'll use the same
   switch (duration()) {
     case Duration::Sixteenth:
@@ -153,9 +153,9 @@ std::string Note::duration_string() const {
   }
 }
 
-Note::operator uint8_t() const { return value_; }
+Note::operator byte() const { return value_; }
 
-const std::unordered_map<int, uint8_t> Note::kMidiPitchMap = {
+const std::unordered_map<int, byte> Note::kMidiPitchMap = {
     {0, 0x02},  // special pitch value for rest
     {48, 0x00}, {49, 0x3e}, {52, 0x04}, {55, 0x06}, {56, 0x08}, {57, 0x0a},
     {58, 0x0c}, {59, 0x0e}, {60, 0x10}, {61, 0x12}, {62, 0x14}, {63, 0x16},
@@ -165,7 +165,7 @@ const std::unordered_map<int, uint8_t> Note::kMidiPitchMap = {
     {83, 0x3c},
 };
 
-const std::unordered_map<int, uint8_t> Note::kMidiDurationMap = {
+const std::unordered_map<int, byte> Note::kMidiDurationMap = {
     {6, 0x00},  {36, 0x01}, {18, 0x40}, {48, 0x41},
     {12, 0x80}, {8, 0x81},  {24, 0xc0}, {16, 0xc1},
 };

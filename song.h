@@ -1,11 +1,10 @@
 #ifndef Z2MUSIC_SONG
 #define Z2MUSIC_SONG
 
-#include <cstddef>
-#include <cstdint>
 #include <vector>
 
 #include "pattern.h"
+#include "util.h"
 
 namespace z2music {
 
@@ -14,13 +13,13 @@ class Rom;
 class Song {
  public:
   Song();
-  Song(const Rom& rom, size_t address, size_t entry);
+  Song(const Rom& rom, Address address, byte entry);
 
   void add_pattern(const Pattern& pattern);
-  void set_sequence(const std::vector<size_t>& seq);
-  void append_sequence(size_t n);
+  void set_sequence(const std::vector<byte>& seq);
+  void append_sequence(byte n);
 
-  std::vector<uint8_t> sequence_data(uint8_t first) const;
+  std::vector<byte> sequence_data(byte first) const;
 
   size_t sequence_length() const;
   size_t pattern_count() const;
@@ -32,14 +31,14 @@ class Song {
   std::vector<Pattern> patterns() { return patterns_; }
   const std::vector<Pattern> patterns() const { return patterns_; }
 
-  Pattern* at(size_t i);
-  const Pattern* at(size_t i) const;
+  Pattern* at(byte i);
+  const Pattern* at(byte i) const;
 
-  const std::vector<size_t> sequence() const { return sequence_; }
+  const std::vector<byte> sequence() const { return sequence_; }
 
  private:
   std::vector<Pattern> patterns_;
-  std::vector<size_t> sequence_;
+  std::vector<byte> sequence_;
 };
 
 }  // namespace z2music

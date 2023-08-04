@@ -11,6 +11,7 @@ cc_binary(
   srcs = ["modder.cc"],
   deps = [
     "//:music",
+    "//:util",
     "@absl//absl/flags:flag",
     "@absl//absl/flags:parse",
     "@absl//absl/flags:usage",
@@ -36,6 +37,7 @@ cc_binary(
   srcs = ["music_dump.cc"],
   deps = [
     "//:music",
+    "//:util",
     "@absl//absl/flags:parse",
     "@absl//absl/flags:usage",
     "@absl//absl/log:flags",

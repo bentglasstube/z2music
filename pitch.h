@@ -3,12 +3,11 @@
 
 #include <array>
 #include <cmath>
-#include <cstddef>
-#include <cstdint>
 #include <map>
 #include <string>
 
 #include "absl/log/log.h"
+#include "util.h"
 
 namespace z2music {
 
@@ -16,9 +15,9 @@ class Rom;
 
 class Pitch {
  public:
-  Pitch(uint16_t timer) : timer(timer) {}
+  Pitch(WordBE timer) : timer(timer) {}
 
-  uint16_t timer;
+  WordBE timer;
   std::string to_string() const;
 
   bool operator==(Pitch other) const { return timer == other.timer; }
@@ -52,7 +51,7 @@ class Pitch {
 
   float freq() const { return kCPURate / (16.0f * (timer + 1)); }
   static Pitch from_freq(float freq) {
-    int timer = static_cast<uint16_t>(std::round(kCPURate / (16 * freq) - 1));
+    int timer = static_cast<WordBE>(std::round(kCPURate / (16 * freq) - 1));
     LOG(INFO) << "Calculated timer for frequency " << freq << " as " << timer;
     return Pitch(timer);
   }
@@ -81,19 +80,19 @@ class Pitch {
 class PitchLUT {
  public:
   PitchLUT() {}
-  PitchLUT(const Rom& rom, size_t address);
+  PitchLUT(const Rom& rom, Address address);
 
-  uint8_t index_for(Pitch pitch) const;
-  Pitch at(uint8_t index) const;
+  byte index_for(Pitch pitch) const;
+  Pitch at(byte index) const;
   bool has_pitch(Pitch pitch) const;
 
-  uint16_t add_pitch(Pitch pitch);
+  WordBE add_pitch(Pitch pitch);
   void clear();
 
-  void commit(Rom& rom, size_t address) const;
+  void commit(Rom& rom, Address address) const;
 
  private:
-  std::map<Pitch, uint8_t> table_;
+  std::map<Pitch, byte> table_;
 };
 
 }  // namespace z2music

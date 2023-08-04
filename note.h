@@ -6,6 +6,8 @@
 #include <string>
 #include <unordered_map>
 
+#include "util.h"
+
 namespace z2music {
 
 class Note {
@@ -70,7 +72,7 @@ class Note {
     B5 = 0x3c,
   };
 
-  Note(uint8_t value) : value_(value) {}
+  Note(byte value) : value_(value) {}
 
   Note(Duration d, Pitch p);
 
@@ -82,25 +84,27 @@ class Note {
   void duration(Duration d);
   void pitch(Pitch p);
 
-  size_t length() const;
+  int length() const;
   std::string pitch_string() const;
   std::string duration_string() const;
 
-  operator uint8_t() const;
+  operator byte() const;
+  bool operator==(int other) const { return value_ == other; }
 
  private:
-  uint8_t value_;
+  byte value_;
 
-  static const std::unordered_map<int, uint8_t> kMidiPitchMap;
-  static const std::unordered_map<int, uint8_t> kMidiDurationMap;
+  static const std::unordered_map<int, byte> kMidiPitchMap;
+  static const std::unordered_map<int, byte> kMidiDurationMap;
 };
 
 // Convenience method for writing notes
-inline uint8_t operator|(Note::Pitch pitch, Note::Duration duration) {
-  return ((uint8_t)pitch & 0x3e) | ((uint8_t)duration & 0xc1);
+inline byte operator|(Note::Pitch pitch, Note::Duration duration) {
+  return (static_cast<uint8_t>(pitch) & 0x3e) |
+         (static_cast<uint8_t>(duration) & 0xc1);
 }
 inline uint8_t operator|(Note::Duration duration, Note::Pitch pitch) {
-  return ((uint8_t)pitch & 0x3e) | ((uint8_t)duration & 0xc1);
+  return pitch | duration;
 }
 
 }  // namespace z2music

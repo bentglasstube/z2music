@@ -1,8 +1,6 @@
 #ifndef Z2MUSIC_ROM
 #define Z2MUSIC_ROM
 
-#include <cstddef>
-#include <cstdint>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -10,6 +8,7 @@
 #include "credits.h"
 #include "pitch.h"
 #include "song.h"
+#include "util.h"
 
 namespace z2music {
 
@@ -57,20 +56,20 @@ class Rom {
 
   Rom(const std::string& filename);
 
-  uint8_t getc(size_t address) const;
-  uint16_t getw(size_t address) const;
-  uint16_t getwr(size_t address) const;
+  byte getc(Address address) const;
+  WordLE getw(Address address) const;
+  WordBE getwr(Address address) const;
 
-  void putc(size_t address, uint8_t data);
-  void putw(size_t address, uint16_t data);
-  void putwr(size_t address, uint16_t data);
+  void putc(Address address, byte data);
+  void putw(Address address, WordLE data);
+  void putwr(Address address, WordBE data);
 
-  void read(uint8_t* buffer, size_t address, size_t length) const;
-  void write(size_t address, std::vector<uint8_t> data);
+  void read(byte* buffer, Address address, size_t length) const;
+  void write(Address address, std::vector<byte> data);
 
   bool commit();
   void save(const std::string& filename);
-  void move_song_table(size_t loader_address, uint16_t base_address);
+  void move_song_table(Address loader_address, Address base_address);
 
   Song* song(const std::string& name);
   const Song* song(const std::string& name) const;
@@ -84,21 +83,21 @@ class Rom {
   static constexpr size_t kRomSize = 0x040000;
   static constexpr size_t kPitchLUTAddress = 0x01918f;
 
-  uint8_t header_[kHeaderSize];
-  uint8_t data_[kRomSize];
+  byte header_[kHeaderSize];
+  byte data_[kRomSize];
 
-  size_t title_screen_table = 0x0184da;
-  size_t overworld_song_table = 0x01a000;
-  size_t town_song_table = 0x01a3ca;
-  size_t palace_song_table = 0x01a62f;
-  size_t great_palace_song_table = 0x01a936;
+  Address title_screen_table = 0x0184da;
+  Address overworld_song_table = 0x01a000;
+  Address town_song_table = 0x01a3ca;
+  Address palace_song_table = 0x01a62f;
+  Address great_palace_song_table = 0x01a936;
 
   std::unordered_map<SongTitle, Song> songs_;
   Credits credits_;
   PitchLUT pitch_lut_;
 
-  void commit(size_t address, std::vector<SongTitle> songs);
-  size_t get_song_table_address(size_t loader_address) const;
+  void commit(Address address, std::vector<SongTitle> songs);
+  Address get_song_table_address(Address loader_address) const;
 };
 
 }  // namespace z2music

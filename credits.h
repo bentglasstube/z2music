@@ -2,8 +2,9 @@
 #define Z2MUSIC_CREDITS
 
 #include <array>
-#include <cstddef>
 #include <string>
+
+#include "util.h"
 
 namespace z2music {
 
@@ -20,14 +21,14 @@ class Credits {
     std::string name2;
   };
 
-  void set(size_t page, const Text& text);
-  Text get(size_t page) const;
+  void set(byte page, const Text& text);
+  Text get(byte page) const;
   void commit(Rom& rom) const;
 
  private:
-  static constexpr size_t kCreditsTableAddress = 0x015259;
-  static constexpr size_t kCreditsBankOffset = 0xc000;
-  static constexpr size_t kCreditsPages = 9;
+  static constexpr Address kCreditsTableAddress = 0x015259;
+  static constexpr Address kCreditsBankOffset = 0xc000;
+  static constexpr byte kCreditsPages = 9;
 
   std::array<Text, kCreditsPages> credits_;
 };

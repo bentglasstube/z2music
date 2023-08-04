@@ -1,15 +1,14 @@
 #include "credits.h"
 
-#include <iomanip>
-
 #include "absl/log/log.h"
 #include "rom.h"
+#include "util.h"
 
 namespace z2music {
 
 namespace {
 
-char z2_decode_(uint8_t data) {
+char z2_decode_(byte data) {
   switch (data) {
     case 0x07:
       return '!';
@@ -26,13 +25,12 @@ char z2_decode_(uint8_t data) {
   if (data >= 0xd0 && data <= 0xd9) return data - 0xa0;
   if (data >= 0xda && data <= 0xf3) return data - 0x99;
 
-  LOG(ERROR) << std::hex << std::setfill('0') << "Cannot decode byte '"
-             << std::setw(2) << data << "'";
+  LOG(ERROR) << "Cannot decode byte '" << data << "'";
 
   return 0x00;
 }
 
-uint8_t z2_encode_(char data) {
+byte z2_encode_(char data) {
   switch (data) {
     case ' ':
       return 0xf4;
@@ -53,28 +51,26 @@ uint8_t z2_encode_(char data) {
   return 0x00;
 }
 
-std::string parse_string_(const Rom& rom, size_t address) {
-  const uint8_t flag = rom.getc(address);
+std::string parse_string_(const Rom& rom, Address address) {
+  const byte flag = rom.getc(address);
   if (flag != 0x22) return "";
 
-  const uint8_t length = rom.getc(address + 2);
+  const byte length = rom.getc(address + 2);
 
   std::string s = "";
-  for (uint8_t i = 0; i < length; ++i) {
+  for (byte i = 0; i < length; ++i) {
     s.append(1, z2_decode_(rom.getc(address + i + 3)));
   }
 
-  LOG(INFO) << std::hex << std::showbase << std::setfill('0')
-            << "Found string at " << std::setw(6) << address << " - [" << s
-            << "]";
+  LOG(INFO) << "Found string at " << address << " - [" << s << "]";
 
   return s;
 }
 
-size_t write_string_(Rom& rom, size_t address, const std::string& s) {
-  uint8_t length = s.length();
+size_t write_string_(Rom& rom, Address address, const std::string& s) {
+  byte length = s.length();
   rom.putc(address, length);
-  for (uint8_t i = 0; i < length; ++i) {
+  for (byte i = 0; i < length; ++i) {
     rom.putc(address + i + 1, z2_encode_(s.at(i)));
   }
   return address + length + 1;
@@ -100,20 +96,20 @@ Credits::Credits(const Rom& rom) {
   }
 }
 
-void Credits::set(size_t page, const Credits::Text& text) {
+void Credits::set(byte page, const Credits::Text& text) {
   if (page < kCreditsPages) credits_[page] = text;
 }
 
-Credits::Text Credits::get(size_t page) const {
+Credits::Text Credits::get(byte page) const {
   if (page < kCreditsPages) return credits_[page];
   return {"", "", ""};
 }
 
 void Credits::commit(Rom& rom) const {
-  size_t table = kCreditsTableAddress;
-  size_t data = kCreditsTableAddress + 4 * kCreditsPages;
+  Address table = kCreditsTableAddress;
+  Address data = kCreditsTableAddress + 4 * kCreditsPages;
 
-  for (size_t i = 0; i < kCreditsPages; ++i) {
+  for (byte i = 0; i < kCreditsPages; ++i) {
     // Add entry for title
     if (credits_[i].title.length() > 0) {
       rom.putw(table, data - kCreditsBankOffset);

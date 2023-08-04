@@ -9,6 +9,7 @@
 #include "absl/flags/usage.h"
 #include "absl/log/log.h"
 #include "rom.h"
+#include "util.h"
 
 ABSL_FLAG(std::string, rom, "", "Path to the rom file to modify.");
 ABSL_FLAG(std::string, output, "", "Path where modified rom should be saved.");
@@ -81,16 +82,16 @@ void process_modfile(z2music::Rom& rom, std::istream& file) {
       if (!song) LOG(FATAL) << "Pattern set with no song";
       if (sequenced) LOG(WARNING) << "Song already sequenced";
 
-      uint32_t tempo;
-      if (!(input >> std::hex >> tempo)) {
+      z2music::byte tempo, voice2;
+      if (!(input >> tempo)) {
         LOG(FATAL) << "Pattern requires tempo";
       }
 
-      uint32_t tempo2;
-      if (input >> std::hex >> tempo2) {
+      if (input >> voice2) {
+        // two bytes means a voiced pattern (i.e. title music)
         song->add_pattern({
-            static_cast<uint8_t>(tempo & 0xff),
-            static_cast<uint8_t>(tempo2 & 0xff),
+            tempo,
+            voice2,
             z2music::Pattern::parse_notes(read_line(file)),
             z2music::Pattern::parse_notes(read_line(file)),
             z2music::Pattern::parse_notes(read_line(file)),
@@ -98,7 +99,7 @@ void process_modfile(z2music::Rom& rom, std::istream& file) {
         });
       } else {
         song->add_pattern({
-            static_cast<uint8_t>(tempo & 0xff),
+            tempo,
             z2music::Pattern::parse_notes(read_line(file)),
             z2music::Pattern::parse_notes(read_line(file)),
             z2music::Pattern::parse_notes(read_line(file)),
@@ -110,11 +111,11 @@ void process_modfile(z2music::Rom& rom, std::istream& file) {
       LOG(INFO) << "Added pattern " << patterns;
 
     } else if (command == "sequence") {
-      if (!song) LOG(FATAL) << "Sequenc set with no song";
+      if (!song) LOG(FATAL) << "Sequence set with no song";
       if (sequenced) LOG(WARNING) << "Song already sequenced";
 
-      size_t n;
-      std::vector<size_t> sequence;
+      z2music::byte n;
+      std::vector<z2music::byte> sequence;
       while (input >> n) {
         if (n > patterns || n == 0) {
           LOG(ERROR) << "No such pattern: " << n << "";

@@ -1,7 +1,5 @@
 #include "pitch.h"
 
-#include <iomanip>
-
 #include "absl/log/log.h"
 #include "rom.h"
 
@@ -14,31 +12,28 @@ std::string Pitch::to_string() const {
   return kStepNames[note % 12] + std::to_string(octave);
 }
 
-PitchLUT::PitchLUT(const Rom& rom, size_t address) {
-  LOG(INFO) << std::hex << "Reading pitch data from " << std::setw(8)
-            << std::setfill('0') << address;
-  for (size_t i = 0; i < 0x7a; i += 2) {
-    const uint16_t timer = rom.getwr(address + i);
+PitchLUT::PitchLUT(const Rom& rom, Address address) {
+  LOG(INFO) << "Reading pitch data from " << address;
+  for (byte i = 0; i < 0x7a; i += byte(2)) {
+    const WordBE timer = rom.getwr(address + i);
     table_[Pitch(timer)] = i;
-    LOG(INFO) << std::hex << "Value at offset " << std::setfill('0')
-              << std::setw(4) << i << ": " << std::setfill('0') << std::setw(6)
-              << timer;
+    LOG(INFO) << "Value at offset " << i << ": " << timer;
   }
 }
 
-uint8_t PitchLUT::index_for(Pitch pitch) const {
+byte PitchLUT::index_for(Pitch pitch) const {
   auto it = table_.find(pitch);
-  return it == table_.end() ? 0 : it->second;
+  return it == table_.end() ? byte(0) : it->second;
 }
 
-Pitch PitchLUT::at(uint8_t index) const {
+Pitch PitchLUT::at(byte index) const {
   for (const auto t : table_) {
     if (t.second == index) return t.first;
   }
   return Pitch::none();
 }
 
-void PitchLUT::commit(Rom& rom, size_t address) const {
+void PitchLUT::commit(Rom& rom, Address address) const {
   for (const auto t : table_) {
     rom.putwr(address + t.second, t.first.timer);
   }

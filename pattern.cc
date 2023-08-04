@@ -7,10 +7,10 @@ namespace z2music {
 
 Pattern::Pattern() : tempo_(0x18) { clear(); }
 
-Pattern::Pattern(const Rom& rom, size_t address) {
+Pattern::Pattern(const Rom& rom, Address address) {
   clear();
 
-  uint8_t header[6];
+  byte header[6];
   rom.read(header, address, 6);
 
   tempo_ = header[0];
@@ -20,7 +20,7 @@ Pattern::Pattern(const Rom& rom, size_t address) {
     voice2_ = rom.getc(address + 7);
   }
 
-  size_t note_base = (header[2] << 8) + header[1] + 0x10000;
+  Address note_base = (header[2] << 8) + header[1] + 0x10000;
 
   read_notes(Channel::Pulse1, rom, note_base);
 
@@ -29,7 +29,7 @@ Pattern::Pattern(const Rom& rom, size_t address) {
   if (header[5] > 0) read_notes(Channel::Noise, rom, note_base + header[5]);
 }
 
-Pattern::Pattern(uint8_t tempo, std::vector<Note> pw1, std::vector<Note> pw2,
+Pattern::Pattern(byte tempo, std::vector<Note> pw1, std::vector<Note> pw2,
                  std::vector<Note> triangle, std::vector<Note> noise)
     : tempo_(tempo) {
   clear();
@@ -39,9 +39,8 @@ Pattern::Pattern(uint8_t tempo, std::vector<Note> pw1, std::vector<Note> pw2,
   add_notes(Channel::Noise, noise);
 }
 
-Pattern::Pattern(uint8_t v1, uint8_t v2, std::vector<Note> pw1,
-                 std::vector<Note> pw2, std::vector<Note> triangle,
-                 std::vector<Note> noise)
+Pattern::Pattern(byte v1, byte v2, std::vector<Note> pw1, std::vector<Note> pw2,
+                 std::vector<Note> triangle, std::vector<Note> noise)
     : tempo_(0x00), voice1_(v1), voice2_(v2) {
   clear();
   add_notes(Channel::Pulse1, pw1);
@@ -80,16 +79,14 @@ bool Pattern::validate() const {
   return true;
 }
 
-void Pattern::set_voicing(uint8_t v1, uint8_t v2) {
+void Pattern::set_voicing(byte v1, byte v2) {
   tempo_ = 0x00;
   voice1_ = v1;
   voice2_ = v2;
 }
 
-size_t Pattern::metadata_length() const { return voiced() ? 8 : 6; }
-
-std::vector<uint8_t> Pattern::note_data() const {
-  std::vector<uint8_t> b;
+std::vector<byte> Pattern::note_data() const {
+  std::vector<byte> b;
 
   const std::array<Channel, 4> channels = {
       Channel::Pulse1,
@@ -99,26 +96,26 @@ std::vector<uint8_t> Pattern::note_data() const {
   };
 
   for (auto ch : channels) {
-    const std::vector<uint8_t> c = note_data(ch);
+    const std::vector<byte> c = note_data(ch);
     b.insert(b.end(), c.begin(), c.end());
   }
 
   return b;
 }
 
-std::vector<uint8_t> Pattern::meta_data(size_t notes) const {
+std::vector<byte> Pattern::meta_data(Address pw1_address) const {
   // FIXME calculate which channels need extra bytes :(
   const size_t pw1 = note_data_length(Channel::Pulse1);
   const size_t pw2 = note_data_length(Channel::Pulse2);
   const size_t tri = note_data_length(Channel::Triangle);
   const size_t noi = note_data_length(Channel::Noise);
 
-  std::vector<uint8_t> b;
+  std::vector<byte> b;
   b.reserve(metadata_length());
 
   b.push_back(tempo_);
-  b.push_back(notes % 256);
-  b.push_back(notes >> 8);
+  b.push_back(pw1_address % 256);
+  b.push_back(pw1_address >> 8);
   b.push_back(tri == 0 ? 0 : pw1 + pw2);
   b.push_back(pw2 == 0 ? 0 : pw1);
   b.push_back(noi == 0 ? 0 : pw1 + pw2 + tri);
@@ -146,8 +143,8 @@ bool Pattern::pad_note_data(Pattern::Channel ch) const {
   return l > 0 && l < length();
 }
 
-std::vector<uint8_t> Pattern::note_data(Pattern::Channel ch) const {
-  std::vector<uint8_t> b;
+std::vector<byte> Pattern::note_data(Pattern::Channel ch) const {
+  std::vector<byte> b;
   b.reserve(notes_.at(ch).size() + 1);
 
   for (auto n : notes_.at(ch)) {
@@ -162,7 +159,7 @@ size_t Pattern::note_data_length(Pattern::Channel ch) const {
   return notes_.at(ch).size() + (pad_note_data(ch) ? 1 : 0);
 }
 
-void Pattern::read_notes(Pattern::Channel ch, const Rom& rom, size_t address) {
+void Pattern::read_notes(Pattern::Channel ch, const Rom& rom, Address address) {
   const size_t max_length = ch == Channel::Pulse1 ? 64 * 96 : length();
   size_t length = 0;
 

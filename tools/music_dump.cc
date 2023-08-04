@@ -1,24 +1,18 @@
 #include <fstream>
-#include <iomanip>
 #include <iostream>
 #include <optional>
+#include <sstream>
 #include <string>
 
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
 #include "absl/flags/usage.h"
 #include "rom.h"
+#include "util.h"
 
 ABSL_FLAG(std::string, rom, "", "Path to the rom file to dump.");
 ABSL_FLAG(std::optional<std::string>, song, std::nullopt,
           "Dump only the listed song.");
-
-// Force desired output format for bytes
-std::ostream& operator<<(std::ostream& os, uint8_t byte) {
-  os << "0x" << std::hex << std::setfill('0') << std::setw(2)
-     << static_cast<uint16_t>(byte);
-  return os;
-}
 
 const z2music::Song* get_song_by_name(const z2music::Rom& rom,
                                       const std::string& name) {
@@ -63,7 +57,7 @@ void dump_song(const std::string& title, const z2music::Song* song) {
   if (!song->empty()) {
     std::cout << "sequence";
     for (size_t n : song->sequence()) {
-      std::cout << " " << std::dec << (n + 1);
+      std::cout << " " << (n + 1);
     }
     std::cout << std::endl << std::endl;
   }

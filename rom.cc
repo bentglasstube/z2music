@@ -58,20 +58,20 @@ Rom::Rom(const std::string& filename) {
   }
 }
 
-uint8_t Rom::getc(size_t address) const {
-  if (address > kRomSize) return 0xff;
-  return data_[address];
+byte Rom::getc(Address address) const {
+  if (address > kRomSize) return byte(0xff);
+  return byte(data_[address]);
 }
 
-uint16_t Rom::getw(size_t address) const {
+WordLE Rom::getw(Address address) const {
   return getc(address) + (getc(address + 1) << 8);
 }
 
-uint16_t Rom::getwr(size_t address) const {
+WordBE Rom::getwr(Address address) const {
   return (getc(address) << 8) + getc(address + 1);
 }
 
-void Rom::read(uint8_t* buffer, size_t address, size_t length) const {
+void Rom::read(byte* buffer, Address address, size_t length) const {
   // Could use std::copy or std::memcpy but this handles out of range
   // addresses
   for (size_t i = 0; i < length; ++i) {
@@ -79,22 +79,22 @@ void Rom::read(uint8_t* buffer, size_t address, size_t length) const {
   }
 }
 
-void Rom::putc(size_t address, uint8_t data) {
+void Rom::putc(Address address, byte data) {
   if (address > kRomSize) return;
   data_[address] = data;
 }
 
-void Rom::putw(size_t address, uint16_t data) {
+void Rom::putw(Address address, WordLE data) {
   putc(address, data & 0xff);
   putc(address + 1, data >> 8);
 }
 
-void Rom::putwr(size_t address, uint16_t data) {
+void Rom::putwr(Address address, WordBE data) {
   putc(address, data >> 8);
   putc(address + 1, data & 0xff);
 }
 
-void Rom::write(size_t address, std::vector<uint8_t> data) {
+void Rom::write(Address address, std::vector<byte> data) {
   for (size_t i = 0; i < data.size(); ++i) {
     putc(address + i, data[i]);
   }
@@ -139,7 +139,7 @@ void Rom::save(const std::string& filename) {
   }
 }
 
-void Rom::move_song_table(size_t loader_address, uint16_t base_address) {
+void Rom::move_song_table(Address loader_address, Address base_address) {
   if (loader_address == kTitleScreenLoader) {
     title_screen_table = base_address + 0x010000;
   } else if (loader_address == kOverworldLoader) {
@@ -151,27 +151,24 @@ void Rom::move_song_table(size_t loader_address, uint16_t base_address) {
   } else if (loader_address == kGreatPalaceLoader) {
     great_palace_song_table = base_address + 0x010000;
   } else {
-    LOG(ERROR) << std::hex << std::showbase << std::setfill('0')
-               << "Unsure what loader is at " << std::setw(6) << loader_address
+    LOG(ERROR) << "Unsure what loader is at " << loader_address
                << ", need manual update";
   }
 
-  const uint16_t old_base = getw(loader_address + 1);
+  const WordLE old_base = getw(loader_address + 1);
 
   // Rewind a bit because there is a load before the main section
   loader_address -= 11;
 
   while (true) {
-    const uint8_t byte = getc(loader_address);
-    if (byte == 0xb9) {
-      const uint16_t addr = getw(loader_address + 1);
-      const uint16_t new_addr = base_address + addr - old_base;
-      LOG(INFO) << std::hex << std::setfill('0') << std::noshowbase
-                << "Found LDA, replacing " << std::setw(4) << addr << " with "
-                << std::setw(4) << new_addr;
+    const byte op = getc(loader_address);
+    if (op == 0xb9) {
+      const WordLE addr = getw(loader_address + 1);
+      const WordLE new_addr = base_address + addr - old_base;
+      LOG(INFO) << "Found LDA, replacing " << addr << " with " << new_addr;
       putw(loader_address + 1, new_addr);
       loader_address += 3;
-    } else if (byte == 0x4c) {
+    } else if (op == 0x4c) {
       LOG(INFO) << "Found JMP, done moving table";
       break;
     } else if (loader_address >= 0x19c74) {
@@ -183,8 +180,8 @@ void Rom::move_song_table(size_t loader_address, uint16_t base_address) {
   }
 }
 
-void Rom::commit(size_t address, std::vector<Rom::SongTitle> songs) {
-  std::array<uint8_t, 8> table;
+void Rom::commit(Address address, std::vector<Rom::SongTitle> songs) {
+  std::array<byte, 8> table;
 
   // TODO make these changeable.
   // This will require rearchitecting things so that there is a Score object
@@ -206,16 +203,14 @@ void Rom::commit(size_t address, std::vector<Rom::SongTitle> songs) {
    * SONG TABLE *
    **************/
 
-  uint8_t offset = 8;
-  std::vector<uint8_t> offsets;
+  byte offset = 8;
+  std::vector<byte> offsets;
   offsets.reserve(8);
 
   // Calculate song offset table
   for (auto s : songs) {
     offsets.push_back(offset);
-    LOG(INFO) << std::hex << std::showbase << std::setfill('0')
-              << "Offset for next song: " << std::setw(2)
-              << static_cast<uint32_t>(offset);
+    LOG(INFO) << "Offset for next song: " << offset;
     offset += songs_.at(s).sequence_length() + 1;
   }
 
@@ -234,25 +229,20 @@ void Rom::commit(size_t address, std::vector<Rom::SongTitle> songs) {
    * SEQUENCE TABLE *
    ******************/
 
-  const uint8_t first_pattern = offset + 1;
-  uint8_t seq_offset = 8;
-  uint8_t pat_offset = first_pattern;
+  const byte first_pattern = offset + 1;
+  byte seq_offset = 8;
+  byte pat_offset = first_pattern;
 
   for (auto s : songs) {
     const auto& song = songs_.at(s);
 
-    LOG(INFO) << std::hex << std::showbase << std::setfill('0')
-              << "Writing seq at " << std::setw(2)
-              << static_cast<uint32_t>(seq_offset) << " with pat at "
-              << std::setw(2) << static_cast<uint32_t>(pat_offset);
-    const std::vector<uint8_t> seq = song.sequence_data(pat_offset);
+    LOG(INFO) << "Writing seq at " << seq_offset << " with pat at "
+              << pat_offset;
+    const std::vector<byte> seq = song.sequence_data(pat_offset);
     write(address + seq_offset, seq);
 
     std::ostringstream output;
-
-    output << std::hex << std::showbase << std::setfill('0');
-    for (auto b : seq)
-      output << std::setw(2) << static_cast<uint32_t>(b) << " ";
+    for (auto b : seq) output << b << " ";
     LOG(INFO) << output.str();
 
     for (size_t i = 0; i < song.pattern_count(); ++i) {
@@ -269,26 +259,21 @@ void Rom::commit(size_t address, std::vector<Rom::SongTitle> songs) {
    * PATTERN TABLE AND NOTE DATA *
    *******************************/
 
-  size_t note_address = pat_offset + address;
+  Address note_address = pat_offset + address;
   pat_offset = first_pattern;
 
-  LOG(INFO) << std::hex << std::showbase << std::setfill('0')
-            << "Note data to start at " << std::setw(6) << note_address;
+  LOG(INFO) << "Note data to start at " << note_address;
 
   for (auto s : songs) {
     for (auto p : songs_.at(s).patterns()) {
-      const std::vector<uint8_t> note_data = p.note_data();
-      const std::vector<uint8_t> meta_data = p.meta_data(note_address);
+      const std::vector<byte> note_data = p.note_data();
+      const std::vector<byte> meta_data = p.meta_data(note_address);
 
-      LOG(INFO) << std::hex << std::showbase << std::setfill('0')
-                << "Pattern at " << std::setw(6) << (address + pat_offset)
-                << ", notes at " << std::setw(6) << note_address;
+      LOG(INFO) << "Pattern at " << (address + pat_offset) << ", notes at "
+                << note_address;
       std::ostringstream output;
-      output << std::hex << std::noshowbase << std::setfill('0');
       for (size_t i = 0; i < meta_data.size(); i += 2) {
-        output << std::setw(2) << static_cast<uint32_t>(meta_data[i])
-               << std::setw(2) << static_cast<uint32_t>(meta_data[i + 1])
-               << " ";
+        output << meta_data[i] << meta_data[i + 1] << " ";
       }
       LOG(INFO) << output.str();
 
@@ -352,17 +337,16 @@ const Song* Rom::song(const std::string& name) const {
   return song(title);
 }
 
-size_t Rom::get_song_table_address(size_t loader_address) const {
+Address Rom::get_song_table_address(Address loader_address) const {
   // Ensure that we are seing an LDA $addr,y instruction
   assert(getc(loader_address) == 0xb9);
 
   // Add the bank offset to the address read
-  const size_t addr = getw(loader_address + 1) + 0x10000;
+  const Address addr = getw(loader_address + 1) + 0x10000;
 
-  LOG(INFO) << std::hex << std::showbase << std::setfill('0') << "Got address "
-            << std::setw(6) << addr << ", from LSA $" << std::noshowbase
-            << std::setw(4) << (addr & 0xffff) << ",y at " << std::showbase
-            << std::setfill('0') << std::setw(6) << loader_address;
+  LOG(INFO) << "Got address " << addr << ", from LSA $" << std::hex
+            << std::setw(4) << std::setfill('0') << (addr & 0xffff) << ",y at "
+            << loader_address;
   return addr;
 }
 

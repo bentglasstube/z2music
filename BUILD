@@ -24,6 +24,7 @@ cc_library(
   ],
   deps = [
     ":note",
+    ":util",
     "@absl//absl/log:log",
   ]
 )
@@ -33,6 +34,7 @@ cc_library(
   hdrs = ["note.h"],
   srcs = ["note.cc"],
   deps = [
+    ":util",
     "@absl//absl/log:log",
   ],
 )
@@ -45,4 +47,11 @@ cc_test(
     "@googletest//:gtest_main",
   ],
   size = 'small',
+)
+
+cc_library(
+  name = "util",
+  hdrs = ["util.h"],
+  srcs = ["util.cc"],
+  visibility = ["//visibility:public"],
 )

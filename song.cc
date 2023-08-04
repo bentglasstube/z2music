@@ -6,18 +6,17 @@ namespace z2music {
 
 Song::Song() {}
 
-Song::Song(const Rom& rom, size_t address, size_t entry) {
+Song::Song(const Rom& rom, Address address, byte entry) {
   if (entry > 7) return;
 
-  uint8_t table[8];
+  byte table[8];
   rom.read(table, address, 8);
 
-  std::unordered_map<uint8_t, size_t> offset_map;
-  std::vector<size_t> seq;
-  size_t n = 0;
+  std::unordered_map<byte, byte> offset_map;
+  byte n = 0;
 
-  for (size_t i = 0; true; ++i) {
-    uint8_t offset = rom.getc(address + table[entry] + i);
+  for (byte i = 0; true; ++i) {
+    byte offset = rom.getc(address + table[entry] + i);
 
     if (offset == 0) break;
     if (offset_map.find(offset) == offset_map.end()) {
@@ -30,22 +29,22 @@ Song::Song(const Rom& rom, size_t address, size_t entry) {
 
 void Song::add_pattern(const Pattern& pattern) { patterns_.push_back(pattern); }
 
-void Song::set_sequence(const std::vector<size_t>& seq) { sequence_ = seq; }
+void Song::set_sequence(const std::vector<byte>& seq) { sequence_ = seq; }
 
-void Song::append_sequence(size_t n) { sequence_.push_back(n); }
+void Song::append_sequence(byte n) { sequence_.push_back(n); }
 
-std::vector<uint8_t> Song::sequence_data(uint8_t first) const {
-  std::vector<uint8_t> b;
+std::vector<byte> Song::sequence_data(byte first) const {
+  std::vector<byte> b;
   b.reserve(sequence_.size() + 1);
 
-  std::vector<uint8_t> offsets;
+  std::vector<byte> offsets;
   offsets.reserve(sequence_.size());
   for (const auto& p : patterns_) {
     offsets.push_back(first);
     first += p.metadata_length();
   }
 
-  for (size_t n : sequence_) {
+  for (byte n : sequence_) {
     b.push_back(offsets[n]);
   }
 
@@ -71,12 +70,12 @@ void Song::clear() {
   sequence_.clear();
 }
 
-Pattern* Song::at(size_t i) {
+Pattern* Song::at(byte i) {
   if (i < 0 || i >= sequence_.size()) return nullptr;
   return &(patterns_.at(sequence_.at(i)));
 }
 
-const Pattern* Song::at(size_t i) const {
+const Pattern* Song::at(byte i) const {
   if (i < 0 || i >= sequence_.size()) return nullptr;
   return &(patterns_.at(sequence_.at(i)));
 }
