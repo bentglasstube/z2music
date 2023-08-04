@@ -63,7 +63,7 @@ void dump_song(const std::string& title, const z2music::Song* song) {
   if (!song->empty()) {
     std::cout << "sequence";
     for (size_t n : song->sequence()) {
-      std::cout << " " << (n + 1);
+      std::cout << " " << std::dec << (n + 1);
     }
     std::cout << std::endl << std::endl;
   }
