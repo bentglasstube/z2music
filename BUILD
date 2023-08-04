@@ -39,6 +39,13 @@ cc_library(
   ],
 )
 
+cc_library(
+  name = "util",
+  hdrs = ["util.h"],
+  srcs = ["util.cc"],
+  visibility = ["//visibility:public"],
+)
+
 cc_test(
   name = "pitch_test",
   srcs = ["pitch_test.cc"],
@@ -49,9 +56,12 @@ cc_test(
   size = 'small',
 )
 
-cc_library(
-  name = "util",
-  hdrs = ["util.h"],
-  srcs = ["util.cc"],
-  visibility = ["//visibility:public"],
+cc_test(
+  name = "pattern_test",
+  srcs = ["pattern_test.cc"],
+  deps = [
+    ":music",
+    "@googletest//:gtest_main",
+  ],
+  size = 'small',
 )

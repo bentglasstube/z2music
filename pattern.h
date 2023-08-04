@@ -59,6 +59,8 @@ class Pattern {
   size_t note_data_length(Channel ch) const;
 
   void read_notes(Channel ch, const Rom& rom, Address address);
+
+  friend class PatternTest_Constructed_Test;
 };
 
 }  // namespace z2music
