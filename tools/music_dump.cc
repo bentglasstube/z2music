@@ -23,19 +23,20 @@ const z2music::Song* get_song_by_name(const z2music::Rom& rom,
 
 void dump_notes(const std::vector<z2music::Note>& notes) {
   z2music::Note::Duration prev_dur = z2music::Note::Duration::Unknown;
+
+  std::ostringstream output;
   for (const auto note : notes) {
     auto duration = note.duration();
 
-    std::cout << note.pitch_string();
+    if (output.tellp() > 0) output << " ";
+    output << note.pitch_string();
 
     if (duration != prev_dur) {
-      std::cout << "." << note.duration_string();
+      output << "." << note.duration_string();
       prev_dur = duration;
     }
-
-    std::cout << " ";
   }
-  std::cout << std::endl;
+  std::cout << output.str() << std::endl;
 }
 
 void dump_song(const std::string& title, const z2music::Song* song) {
