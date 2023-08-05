@@ -21,24 +21,6 @@ const z2music::Song* get_song_by_name(const z2music::Rom& rom,
   return song;
 }
 
-void dump_notes(const std::vector<z2music::Note>& notes) {
-  z2music::Note::Duration prev_dur = z2music::Note::Duration::Unknown;
-
-  std::ostringstream output;
-  for (const auto note : notes) {
-    auto duration = note.duration();
-
-    if (output.tellp() > 0) output << " ";
-    output << note.pitch_string();
-
-    if (duration != prev_dur) {
-      output << "." << note.duration_string();
-      prev_dur = duration;
-    }
-  }
-  std::cout << output.str() << std::endl;
-}
-
 void dump_song(const std::string& title, const z2music::Song* song) {
   std::cout << "song " << title << std::endl;
 
@@ -49,10 +31,15 @@ void dump_song(const std::string& title, const z2music::Song* song) {
     } else {
       std::cout << "pattern " << pattern.tempo() << std::endl;
     }
-    dump_notes(pattern.notes(z2music::Pattern::Channel::Pulse1));
-    dump_notes(pattern.notes(z2music::Pattern::Channel::Pulse2));
-    dump_notes(pattern.notes(z2music::Pattern::Channel::Triangle));
-    dump_notes(pattern.notes(z2music::Pattern::Channel::Noise));
+
+    std::cout << pattern.dump_notes(z2music::Pattern::Channel::Pulse1)
+              << std::endl;
+    std::cout << pattern.dump_notes(z2music::Pattern::Channel::Pulse2)
+              << std::endl;
+    std::cout << pattern.dump_notes(z2music::Pattern::Channel::Triangle)
+              << std::endl;
+    std::cout << pattern.dump_notes(z2music::Pattern::Channel::Noise)
+              << std::endl;
   }
 
   if (!song->empty()) {

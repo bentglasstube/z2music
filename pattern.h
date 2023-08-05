@@ -48,6 +48,7 @@ class Pattern {
 
   static std::vector<Note> parse_notes(const std::string& data,
                                        int transpose = 0);
+  std::string dump_notes(Channel ch) const;
 
  private:
   byte tempo_, voice1_, voice2_;
@@ -59,8 +60,6 @@ class Pattern {
   size_t note_data_length(Channel ch) const;
 
   void read_notes(Channel ch, const Rom& rom, Address address);
-
-  friend class PatternTest_Constructed_Test;
 };
 
 }  // namespace z2music

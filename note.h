@@ -27,11 +27,11 @@ class Note {
 
   enum class Pitch {
     Rest = 0x02,
-    Cs3 = 0x3e,
     C3 = 0x00,
+    Cs3 = 0x3e,
+    Db3 = 0x3e,
     E3 = 0x04,
     G3 = 0x06,
-    Db3 = 0x3e,
     Gs3 = 0x08,
     Ab3 = 0x08,
     A3 = 0x0a,

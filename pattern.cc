@@ -1,5 +1,7 @@
 #include "pattern.h"
 
+#include <sstream>
+
 #include "absl/log/log.h"
 #include "rom.h"
 
@@ -171,6 +173,12 @@ void Pattern::read_notes(Pattern::Channel ch, const Rom& rom, Address address) {
     length += n.length();
     add_notes(ch, {n});
 
+    // FIXME This is all wrong, the duration comes from a LUT which has a number
+    // of ticks for each duration value.  Triplets are encoded using two
+    // different indices in the LUT because the tick length they divide is even
+    // (and thus not divisble by three).  This whole thing needs to be reworked
+    // to use the duration LUT.
+    //
     // The QuarterTriplet duration has special meaning when preceeded by
     // two EighthTriplets, which differs based on a tempo flag.
     if (n.duration() == Note::Duration::QuarterTriplet) {
@@ -312,6 +320,24 @@ std::vector<Note> Pattern::parse_notes(const std::string& data, int transpose) {
   }
 
   return notes;
+}
+
+std::string Pattern::dump_notes(Channel ch) const {
+  Note::Duration prev_dur = Note::Duration::Unknown;
+
+  std::ostringstream output;
+  for (const auto note : notes(ch)) {
+    auto duration = note.duration();
+
+    if (output.tellp() > 0) output << " ";
+    output << note.pitch_string();
+
+    if (duration != prev_dur) {
+      output << "." << note.duration_string();
+      prev_dur = duration;
+    }
+  }
+  return output.str();
 }
 
 }  // namespace z2music
