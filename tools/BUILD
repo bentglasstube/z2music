@@ -4,6 +4,18 @@ cc_binary(
   name = "credits_dump",
   srcs = ["credits_dump.cc"],
   deps = ["//:music"],
+  linkopts = select({
+    "//:windows": [
+      "-ldbghelp",
+    ],
+    "//conditions:default": [],
+  }),
+)
+
+platform_target(
+  name = "credits_dump_windows",
+  platform = "@crt//platforms/x86_64:win64",
+  target = ":credits_dump",
 )
 
 cc_binary(
@@ -65,4 +77,16 @@ cc_binary(
     "@absl//absl/flags:usage",
     "@absl//absl/log:flags",
   ],
+  linkopts = select({
+    "//:windows": [
+      "-ldbghelp",
+    ],
+    "//conditions:default": [],
+  }),
+)
+
+platform_target(
+  name = "pitch_dump_windows",
+  platform = "@crt//platforms/x86_64:win64",
+  target = ":pitch_dump",
 )

@@ -8,11 +8,10 @@ make_release() {
   echo "Building release for version $version"
 
   bazel test :all
-  bazel build -c opt tools:modder_windows tools:music_dump_windows
+  bazel build -c opt tools:credits_dump_windows tools:modder_windows tools:music_dump_windows tools:pitch_dump_windows
 
   mkdir z2music
-  cp bazel-bin/tools/modder.exe z2music
-  cp bazel-bin/tools/music_dump.exe z2music
+  cp bazel-bin/tools/*.exe z2music
   cp projects/amida.z2music z2music
   cp bazel-z2music/external/gcc_mxe_mingw64_files/x86_64-w64-mingw32.shared/bin/*.dll z2music
 
