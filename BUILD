@@ -1,3 +1,5 @@
+load("@crt//rules:pkg_win.bzl", "pkg_win");
+
 config_setting(
   name = "windows",
   constraint_values = [
@@ -64,4 +66,15 @@ cc_test(
     "@googletest//:gtest_main",
   ],
   size = 'small',
+)
+
+pkg_win(
+  name = "release",
+  srcs = [
+    "//tools:credits_dump",
+    "//tools:modder",
+    "//tools:music_dump",
+    "//tools:pitch_dump",
+    "//projects:demo_projects",
+  ],
 )

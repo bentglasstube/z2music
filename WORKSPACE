@@ -23,9 +23,14 @@ http_archive(
 
 git_repository(
   name = "crt",
-  remote = "https://github.com/cfrantz/crt",
-  commit = "fbbef7537f6a43311b5ac02a2a91cbdf4fc032a9",
+  remote = "https://github.com/bentglasstube/crt",
+  commit = "f6b7c9227053837d44212a818bb8cb7b156fb2d5",
 )
+
+load("@crt//:repos.bzl", "crt_repos")
+crt_repos()
+load("@crt//:deps.bzl", "crt_deps")
+crt_deps()
 
 load("@crt//config:registration.bzl", "crt_register_toolchains")
 crt_register_toolchains(win64 = True)

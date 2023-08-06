@@ -1,5 +1,9 @@
 load("@crt//rules:transition.bzl", "platform_target")
 
+package(
+  default_visibility = ["//visibility:public"],
+)
+
 cc_binary(
   name = "credits_dump",
   srcs = ["credits_dump.cc"],
