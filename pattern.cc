@@ -277,10 +277,8 @@ std::vector<Note> Pattern::parse_notes(const std::string& data, int transpose) {
         break;
 
       case 't':
-        if (octave == 0) {
-        } else {
-          triplet = true;
-        }
+        triplet = true;
+        break;
 
       case 'x':
         // snare drum (G#3)
@@ -316,7 +314,8 @@ std::vector<Note> Pattern::parse_notes(const std::string& data, int transpose) {
   // Add final note
   if (pitch && octave && duration) {
     const int note = pitch > 0 ? pitch + 12 * octave + 11 + transpose : 0;
-    notes.push_back(z2music::Note::from_midi(note, 6 * duration));
+    const int ticks = (triplet ? 4 : 6) * duration;
+    notes.push_back(z2music::Note::from_midi(note, ticks));
   }
 
   return notes;

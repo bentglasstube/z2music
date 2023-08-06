@@ -26,6 +26,16 @@ z2music::Song* get_song_by_name(z2music::Rom& rom, const std::string& name) {
   return song;
 }
 
+z2music::Address get_loader_by_name(z2music::Rom& rom,
+                                    const std::string& name) {
+  if (name == "Title") return z2music::Rom::kTitleScreenLoader;
+  if (name == "Overworld") return z2music::Rom::kOverworldLoader;
+  if (name == "Town") return z2music::Rom::kTownLoader;
+  if (name == "Palace") return z2music::Rom::kPalaceLoader;
+  if (name == "GreatPalace") return z2music::Rom::kGreatPalaceLoader;
+  return z2music::Address(0);
+}
+
 void rtrim(std::string& str) {
   str.erase(std::find_if(str.rbegin(), str.rend(),
                          [](unsigned char c) { return !std::isspace(c); })
@@ -69,7 +79,21 @@ void process_modfile(z2music::Rom& rom, std::istream& file) {
       patterns = 0;
       sequenced = false;
 
-      LOG(INFO) << "Clearing song " << song;
+      LOG(INFO) << "Clearing song " << name;
+
+    } else if (command == "loader") {
+      std::string name;
+      z2music::Address address;
+
+      if (!(input >> name >> address)) {
+        LOG(FATAL) << "Loader requires name and address";
+      }
+
+      z2music::Address loader = get_loader_by_name(rom, name);
+      if (loader == 0) LOG(FATAL) << "Unknown loader name: " << name;
+      rom.move_song_table(loader, address);
+
+      LOG(INFO) << "Moving loader " << name << " to " << address;
 
     } else if (command == "transpose") {
       if (!(input >> transpose)) {
@@ -118,7 +142,7 @@ void process_modfile(z2music::Rom& rom, std::istream& file) {
       std::vector<z2music::byte> sequence;
       while (input >> n) {
         if (n > patterns || n == 0) {
-          LOG(ERROR) << "No such pattern: " << n << "";
+          LOG(ERROR) << "No such pattern: " << n << " (" << patterns << ")";
         }
         sequence.push_back(n - 1);
         sequenced = true;
@@ -126,22 +150,6 @@ void process_modfile(z2music::Rom& rom, std::istream& file) {
 
       song->set_sequence(sequence);
       LOG(INFO) << "Sequence set";
-
-    } else if (command == "pitch") {
-      // TODO set pitch of notes
-      // pitch LUT $918F
-      // pitch = 1789773 / (16 * (timer + 1))
-      // pitch * (16 * (timer + 1)) = 1789773
-      // (16 * (timer + 1)) = 1789773 / pitch
-      // timer + 1 = 1789773 / (16 * pitch)
-      // timer = 1789773 / (16 * pitch) -1
-
-      float pitch = 440.0f;
-      uint16_t timer = 1789773 / (16 * pitch) - 1;
-      uint8_t offset = 0x1e;
-
-      rom.putc(0x1918f + offset, timer >> 8);
-      rom.putc(0x1918f + offset + 1, timer & 0xff);
 
     } else {
       LOG(WARNING) << "Unknown keyword '" << command << "'";

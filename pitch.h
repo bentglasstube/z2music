@@ -95,6 +95,8 @@ class PitchLUT {
   std::map<Pitch, byte> table_;
 };
 
+std::ostream& operator<<(std::ostream& os, Pitch p);
+
 }  // namespace z2music
 
 #endif  // define Z2MUSIC_PITCH

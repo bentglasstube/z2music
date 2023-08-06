@@ -14,11 +14,9 @@ struct StrongInt {
   T operator++(int) { return value++; }
   T operator+=(T other) { return value += other; }
   T operator-=(T other) { return value -= other; }
+
   T value;
 };
-
-template <typename T, typename Name>
-std::istream& operator>>(std::istream& is, StrongInt<T, Name> v);
 
 typedef StrongInt<uint8_t, struct ByteTag> byte;
 typedef StrongInt<uint16_t, struct BigEndianWordTag> WordBE;
@@ -31,6 +29,7 @@ std::ostream& operator<<(std::ostream& os, const WordBE& word);
 std::ostream& operator<<(std::ostream& os, const Address& a);
 
 std::istream& operator>>(std::istream& is, byte& b);
+std::istream& operator>>(std::istream& is, Address& a);
 
 }  // namespace z2music
 

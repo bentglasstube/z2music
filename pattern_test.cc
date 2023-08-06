@@ -77,16 +77,40 @@ TEST(PatternTest, Parsing) {
 
 TEST(PatternTest, RoundTrip) {
   const std::string input_pw1 =
-      "r.4 A4 B4.2 C5.4 D5.6 A4.4 B4.2 C5.4 E5.6 A4.4 B4.2 C5.6 F5.4 E5 D5 "
-      "E5.2 C5";
+      "F4.8 r.t2 r F4 F4 F4 F4 F4 r D#4 F4.4 r.t2 r F4 F4 F4 F4 F4 r D#4 F4.4 "
+      "r.t2 r F4 F4 F4 F4 F4.2 C4.1 C4 C4.2 C4.1 C4 C4.2 C4.1 C4 C4.2 C4";
   const std::string input_pw2 =
-      "A3.4 G#3 A3 B3 C4 r B3 C4 D4 r C4 B3 C4 B3 A3 G#3";
+      "A3.8 r.t2 r A3 A3 A3 A3 G3 r G3 G3.4 r G3.t2 G3 G3 G#3 r G#3 G#3.4 r.t2 "
+      "r G#3 G#3 G#3 G#3 G#3.2 E3.1 E3 E3.2 E3.1 E3 E3.2 E3.1 E3 E3.2 E3";
   const std::string input_triangle =
-      "A4.2 A4 A4 A4 A4 A4 A4 A4 F4 F4 F4 F4 F4 F4 F4 F4 G4 G4 G4 G4 G4 G4 G4 "
-      "G4 E4 E4 E4 E4 E4 E4 E4 E4";
+      "F4.4 F4.t2 F4 F4 F4.4 F4.t2 F4 F4 D#4.4 D#4.t2 D#4 D#4 D#4.4 D#4.t2 D#4 "
+      "D#4 C#4.4 C#4.t2 C#4 C#4 C#4.4 C#4.t2 C#4 C#4 C4.4 C4 C4 D4.2 E4";
   const std::string input_noise =
-      "G#3.2 G#3 G#3 G#3 G#3.4 G#3.2 G#3 G#3.4 G#3 G#3.2 G#3 G#3.4 G#3.2 G#3 "
-      "G#3 G#3 G#3.4 G#3.2 G#3 G#3.4 G#3 G#3.2 G#3 G#3 G#3";
+      "G#3.4 G#3 G#3 G#3 G#3 G#3 G#3 G#3 G#3 G#3 G#3 G#3 G#3 G#3 G#3 G#3";
+
+  Pattern pattern{
+      0x18,
+      z2music::Pattern::parse_notes(input_pw1),
+      z2music::Pattern::parse_notes(input_pw2),
+      z2music::Pattern::parse_notes(input_triangle),
+      z2music::Pattern::parse_notes(input_noise),
+  };
+
+  EXPECT_EQ(input_pw1, pattern.dump_notes(z2music::Pattern::Channel::Pulse1));
+  EXPECT_EQ(input_pw2, pattern.dump_notes(z2music::Pattern::Channel::Pulse2));
+  EXPECT_EQ(input_triangle,
+            pattern.dump_notes(z2music::Pattern::Channel::Triangle));
+  EXPECT_EQ(input_noise, pattern.dump_notes(z2music::Pattern::Channel::Noise));
+}
+
+TEST(PatternTest, RoundTrip2) {
+  const std::string input_pw1 = "A#4.4 G#4.2 A#4.4 G#4.6 G4.3 B4 D5.2 G5.8";
+  const std::string input_pw2 = "D4.4 D4.2 D4.4 D4.6 D4.3 G4 B4.2 D5.8 F4.4";
+  const std::string input_triangle =
+      "F4.4 F4.2 F4.4 F4.6 G4.1 D5.2 G4.1 D4.2 G4.1 D5.2 G4.1 D4.2 G4 D5";
+  const std::string input_noise =
+      "G#3.4 G#3.2 G#3.4 G#3.2 G#3 G#3 G#3.1 G#3.2 G#3.1 G#3.2 G#3.1 G#3.2 "
+      "G#3.1 G#3.2 G#3 G#3";
 
   Pattern pattern{
       0x18,

@@ -48,11 +48,11 @@ class Rom {
     FinalBossTheme,
   };
 
-  static constexpr size_t kTitleScreenLoader = 0x0182fd;
-  static constexpr size_t kOverworldLoader = 0x019b90;
-  static constexpr size_t kTownLoader = 0x019bcf;
-  static constexpr size_t kPalaceLoader = 0x019c0e;
-  static constexpr size_t kGreatPalaceLoader = 0x019c4b;
+  static constexpr Address kTitleScreenLoader = 0x0182fd;
+  static constexpr Address kOverworldLoader = 0x019b90;
+  static constexpr Address kTownLoader = 0x019bcf;
+  static constexpr Address kPalaceLoader = 0x019c0e;
+  static constexpr Address kGreatPalaceLoader = 0x019c4b;
 
   Rom(const std::string& filename);
 

@@ -16,8 +16,9 @@ PitchLUT::PitchLUT(const Rom& rom, Address address) {
   LOG(INFO) << "Reading pitch data from " << address;
   for (byte i = 0; i < 0x7a; i += byte(2)) {
     const WordBE timer = rom.getwr(address + i);
-    table_[Pitch(timer)] = i;
-    LOG(INFO) << "Value at offset " << i << ": " << timer;
+    const Pitch pitch{timer};
+    table_[pitch] = i;
+    LOG(INFO) << "Value at offset " << i << ": " << pitch;
   }
 }
 
@@ -38,6 +39,10 @@ void PitchLUT::commit(Rom& rom, Address address) const {
     rom.putwr(address + t.second, t.first.timer);
   }
   return;
+}
+
+std::ostream& operator<<(std::ostream& os, Pitch p) {
+  return os << p.to_string();
 }
 
 const std::array<std::string, 12> Pitch::kStepNames = {

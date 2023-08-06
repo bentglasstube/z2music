@@ -180,6 +180,19 @@ void Rom::move_song_table(Address loader_address, Address base_address) {
   }
 }
 
+namespace {
+std::string data_dump(const std::vector<z2music::byte>& data) {
+  std::ostringstream output;
+  output << std::hex << std::noshowbase << std::setfill('0');
+  size_t i = 0;
+  for (auto d : data) {
+    if (++i % 2 == 1) output << ' ';
+    output << std::setw(2) << static_cast<int>(d.value);
+  }
+  return output.str();
+}
+}  // namespace
+
 void Rom::commit(Address address, std::vector<Rom::SongTitle> songs) {
   std::array<byte, 8> table;
 
@@ -239,11 +252,8 @@ void Rom::commit(Address address, std::vector<Rom::SongTitle> songs) {
     LOG(INFO) << "Writing seq at " << seq_offset << " with pat at "
               << pat_offset;
     const std::vector<byte> seq = song.sequence_data(pat_offset);
+    LOG(INFO) << "Sequence data: " << data_dump(seq);
     write(address + seq_offset, seq);
-
-    std::ostringstream output;
-    for (auto b : seq) output << b << " ";
-    LOG(INFO) << output.str();
 
     for (size_t i = 0; i < song.pattern_count(); ++i) {
       pat_offset += song.at(i)->metadata_length();
@@ -262,22 +272,17 @@ void Rom::commit(Address address, std::vector<Rom::SongTitle> songs) {
   Address note_address = pat_offset + address;
   pat_offset = first_pattern;
 
-  LOG(INFO) << "Note data to start at " << note_address;
-
   for (auto s : songs) {
     for (auto p : songs_.at(s).patterns()) {
       const std::vector<byte> note_data = p.note_data();
       const std::vector<byte> meta_data = p.meta_data(note_address);
 
-      LOG(INFO) << "Pattern at " << (address + pat_offset) << ", notes at "
-                << note_address;
-      std::ostringstream output;
-      for (size_t i = 0; i < meta_data.size(); i += 2) {
-        output << meta_data[i] << meta_data[i + 1] << " ";
-      }
-      LOG(INFO) << output.str();
+      const z2music::Address meta_address = address + pat_offset;
 
-      write(address + pat_offset, meta_data);
+      LOG(INFO) << "Metadata:  " << meta_address << " " << data_dump(meta_data);
+      LOG(INFO) << "Note data: " << note_address << " " << data_dump(note_data);
+
+      write(meta_address, meta_data);
       write(note_address, note_data);
 
       pat_offset += meta_data.size();

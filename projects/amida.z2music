@@ -1,3 +1,7 @@
+loader Town 0xa800
+loader Palace 0xb000
+loader GreatPalace 0xb800
+
 song TitleIntro
 pattern 0x30 0x30
 r.2 F4.3 E4 C4 G3
