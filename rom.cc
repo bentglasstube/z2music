@@ -510,7 +510,7 @@ Note Rom::decode_note(byte b) const {
 
 void Rom::commit_pitch_lut(Address address) {
   for (byte i = 0; i < 0x7a; i += byte(2)) {
-    putwr(address + i, pitch_lut_.at(i).timer);
+    putwr(address + i, pitch_lut_.at(i).timer());
   }
 }
 

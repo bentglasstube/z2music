@@ -16,7 +16,7 @@ class TestWithFakeRom : public ::testing::Test {
   Rom rom;
 
   TestWithFakeRom() {
-    std::array<int, 59> pitches = {
+    std::array<Pitch::Midi, 59> pitches = {
         Pitch::E3,  Pitch::G3,  Pitch::Gs3, Pitch::A3,  Pitch::As3, Pitch::B3,
         Pitch::C4,  Pitch::Cs4, Pitch::D4,  Pitch::Ds4, Pitch::E4,  Pitch::F4,
         Pitch::Fs4, Pitch::G4,  Pitch::Gs4, Pitch::A4,  Pitch::As4, Pitch::B4,
@@ -27,19 +27,19 @@ class TestWithFakeRom : public ::testing::Test {
         Pitch::G6,  Pitch::Gs6, Pitch::A6,  Pitch::As6, Pitch::B6,  Pitch::C7,
         Pitch::Cs7, Pitch::D7,  Pitch::Ds7, Pitch::E7,  Pitch::F7,  Pitch::Fs7,
         Pitch::G7,  Pitch::Gs7, Pitch::A7,  Pitch::As7, Pitch::B7};
-    rom.pitch_lut().add_pitch(Pitch::from_midi(Pitch::C3));
+    rom.pitch_lut().add_pitch(Pitch(Pitch::C3));
     rom.pitch_lut().add_pitch(Pitch::none());
     for (auto const p : pitches) {
-      rom.pitch_lut().add_pitch(Pitch::from_midi(p));
+      rom.pitch_lut().add_pitch(Pitch(p));
     }
   }
 
   void EXPECT_DATA_EQ(const Pattern& pattern, const std::vector<byte> metadata,
-                      const std::vector<byte> data) {
+                      const std::vector<byte> expected_data) {
     EXPECT_EQ(pattern.meta_data(0x1234), metadata);
 
-    auto note_data = rom.encode_pattern(pattern);
-    EXPECT_EQ(note_data, data);
+    auto encoded_data = rom.encode_pattern(pattern);
+    EXPECT_EQ(encoded_data, expected_data);
   }
 };
 
@@ -50,35 +50,32 @@ TEST_F(TestWithFakeRom, SingleChannel) {
   }
   LOG(INFO) << "Pitch LUT data: " << data.str();
 
-  Pattern pattern =
-      Pattern(0x18,
-              {{Pitch::from_midi(Pitch::A4), Note::Duration::Eighth},
-               {Pitch::from_midi(Pitch::C5), Note::Duration::Quarter},
-               {Pitch::from_midi(Pitch::E5), Note::Duration::Half}},
-              {}, {}, {});
+  Pattern pattern = Pattern(0x18,
+                            {{Pitch(Pitch::A4), Note::Duration::Eighth},
+                             {Pitch(Pitch::C5), Note::Duration::Quarter},
+                             {Pitch(Pitch::E5), Note::Duration::Half}},
+                            {}, {}, {});
 
   EXPECT_DATA_EQ(pattern, {0x18, 0x34, 0x12, 0x00, 0x00, 0x00},
                  {0xa2, 0xe8, 0x71, 0x00});
 }
 
 TEST_F(TestWithFakeRom, AllChannels) {
-  Pattern pattern =
-      Pattern(0x20, {{Pitch::from_midi(Pitch::A4), Note::Duration::Half}},
-              {{Pitch::from_midi(Pitch::C5), Note::Duration::Half}},
-              {{Pitch::from_midi(Pitch::E5), Note::Duration::Half}},
-              {{Pitch::from_midi(Pitch::Gs3), Note::Duration::Sixteenth}});
+  Pattern pattern = Pattern(0x20, {{Pitch(Pitch::A4), Note::Duration::Half}},
+                            {{Pitch(Pitch::C5), Note::Duration::Half}},
+                            {{Pitch(Pitch::E5), Note::Duration::Half}},
+                            {{Pitch(Pitch::Gs3), Note::Duration::Sixteenth}});
 
   EXPECT_DATA_EQ(pattern, {0x20, 0x34, 0x12, 0x03, 0x02, 0x04},
                  {0x63, 0x00, 0x69, 0x71, 0x08, 0x00});
 }
 
 TEST_F(TestWithFakeRom, Triplets) {
-  Pattern pattern =
-      Pattern(0x18,
-              {{Pitch::from_midi(Pitch::C3), Note::Duration::EighthTriplet},
-               {Pitch::from_midi(Pitch::E3), Note::Duration::EighthTriplet},
-               {Pitch::from_midi(Pitch::G3), Note::Duration::EighthTriplet}},
-              {}, {}, {});
+  Pattern pattern = Pattern(0x18,
+                            {{Pitch(Pitch::C3), Note::Duration::EighthTriplet},
+                             {Pitch(Pitch::E3), Note::Duration::EighthTriplet},
+                             {Pitch(Pitch::G3), Note::Duration::EighthTriplet}},
+                            {}, {}, {});
 
   // FIXME this is what data is generated but it's incorrect.
   EXPECT_DATA_EQ(pattern, {0x18, 0x34, 0x12, 0x00, 0x00, 0x00},

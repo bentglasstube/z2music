@@ -79,4 +79,8 @@ std::string Note::duration_string() const {
   return "??";
 }
 
+std::ostream& operator<<(std::ostream& os, Note n) {
+  return os << n.to_string();
+}
+
 }  // namespace z2music

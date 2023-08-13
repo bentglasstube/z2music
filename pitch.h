@@ -10,20 +10,6 @@
 
 namespace z2music {
 
-class Pitch {
- public:
-  Pitch() : timer(0) {}
-  Pitch(WordBE timer) : timer(timer) {}
-
-  WordBE timer;
-  std::string to_string() const;
-
-  bool operator==(Pitch other) const { return timer == other.timer; }
-  bool operator<(Pitch other) const { return timer > other.timer; }
-  bool operator>(Pitch other) const { return timer < other.timer; }
-  bool operator<=(Pitch other) const { return timer >= other.timer; }
-  bool operator>=(Pitch other) const { return timer <= other.timer; }
-
 #define OCTAVE(octave)                                              \
   C##octave = (12 * octave + 12), Cs##octave = (12 * octave + 13),  \
   Db##octave = (12 * octave + 13), D##octave = (12 * octave + 14),  \
@@ -35,6 +21,8 @@ class Pitch {
   As##octave = (12 * octave + 22), Bb##octave = (12 * octave + 22), \
   B##octave = (12 * octave + 23)
 
+class Pitch {
+ public:
   enum Midi {
     OCTAVE(0),
     OCTAVE(1),
@@ -47,19 +35,27 @@ class Pitch {
     OCTAVE(8),
   };
 
-  float freq() const { return kCPURate / (16.0f * (timer + 1)); }
-  static Pitch from_freq(float freq) {
-    int timer = static_cast<WordBE>(std::round(kCPURate / (16 * freq) - 1));
-    return Pitch(timer);
-  }
+  Pitch() : timer_(0) {}
 
+  explicit Pitch(WordBE timer) : timer_(timer) {}
+  explicit Pitch(float freq)
+      : timer_(static_cast<WordBE>(std::round(kCPURate / (16 * freq) - 1))) {}
+  explicit Pitch(Midi note)
+      : Pitch(pow(2.f, (note - Midi::A4) / 12.f) * kFreqA4) {}
+
+  std::string to_string() const;
+
+  bool operator==(Pitch other) const { return timer_ == other.timer_; }
+  bool operator<(Pitch other) const { return timer_ > other.timer_; }
+  bool operator>(Pitch other) const { return timer_ < other.timer_; }
+  bool operator<=(Pitch other) const { return timer_ >= other.timer_; }
+  bool operator>=(Pitch other) const { return timer_ <= other.timer_; }
+
+  WordBE timer() const { return timer_; }
+  float freq() const { return kCPURate / (16.0f * (timer_ + 1)); }
   int midi() const {
     return Midi::A4 +
            static_cast<int>(std::round(12 * log(freq() / kFreqA4) / kLog2));
-  }
-  static Pitch from_midi(int midi) {
-    float freq = pow(2.f, (midi - Midi::A4) / 12.f) * 440.f;
-    return from_freq(freq);
   }
 
   static Pitch none() { return Pitch(0); }
@@ -70,6 +66,8 @@ class Pitch {
   static constexpr int kMidiA4 = 69;
   static constexpr int kCPURate = 1789773;
   static const std::array<std::string, 12> kStepNames;
+
+  WordBE timer_;
 };
 
 std::ostream& operator<<(std::ostream& os, Pitch p);

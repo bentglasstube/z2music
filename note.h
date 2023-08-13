@@ -49,6 +49,8 @@ class Note {
   Duration duration_;
 };
 
+std::ostream& operator<<(std::ostream& os, Note n);
+
 }  // namespace z2music
 
 #endif  // define Z2MUSIC_NOTE

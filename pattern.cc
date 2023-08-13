@@ -117,7 +117,8 @@ Note build_note(int pitch, int octave, int duration, bool triplet,
                 int transpose) {
   const int note = pitch > 0 ? pitch + 12 * octave + 11 + transpose : 0;
   const int ticks = (triplet ? 4 : 6) * 4 * duration;
-  return Note(note == 0 ? Pitch::none() : Pitch::from_midi(note), ticks);
+  return Note(note == 0 ? Pitch::none() : Pitch(static_cast<Pitch::Midi>(note)),
+              ticks);
 }
 }  // namespace
 
