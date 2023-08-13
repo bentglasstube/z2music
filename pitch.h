@@ -11,8 +11,6 @@
 
 namespace z2music {
 
-class Rom;
-
 class Pitch {
  public:
   Pitch(WordBE timer) : timer(timer) {}
@@ -75,24 +73,6 @@ class Pitch {
   static constexpr int kMidiA4 = 69;
   static constexpr int kCPURate = 1789773;
   static const std::array<std::string, 12> kStepNames;
-};
-
-class PitchLUT {
- public:
-  PitchLUT() {}
-  PitchLUT(const Rom& rom, Address address);
-
-  byte index_for(Pitch pitch) const;
-  Pitch at(byte index) const;
-  bool has_pitch(Pitch pitch) const;
-
-  WordBE add_pitch(Pitch pitch);
-  void clear();
-
-  void commit(Rom& rom, Address address) const;
-
- private:
-  std::map<Pitch, byte> table_;
 };
 
 std::ostream& operator<<(std::ostream& os, Pitch p);

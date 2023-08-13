@@ -13,19 +13,20 @@ cc_library(
   hdrs = [
     "credits.h",
     "pattern.h",
-    "pitch.h",
+    "pitch_lut.h",
     "rom.h",
     "song.h",
   ],
   srcs = [
     "credits.cc",
     "pattern.cc",
-    "pitch.cc",
+    "pitch_lut.cc",
     "rom.cc",
     "song.cc",
   ],
   deps = [
     ":note",
+    ":pitch",
     ":util",
     "@absl//absl/log:log",
   ]
@@ -42,6 +43,28 @@ cc_library(
 )
 
 cc_library(
+  name = "pitch",
+  hdrs = ["pitch.h"],
+  srcs = ["pitch.cc"],
+  deps = [
+    ":util",
+    "@absl//absl/log:log",
+  ],
+)
+
+cc_library(
+  name = "pitch_lut",
+  hdrs = ["pitch_lut.h"],
+  srcs = ["pitch_lut.cc"],
+  deps = [
+    ":music",
+    ":pitch",
+    ":util",
+    "@absl//absl/log:log",
+  ],
+)
+
+cc_library(
   name = "util",
   hdrs = ["util.h"],
   srcs = ["util.cc"],
@@ -52,7 +75,7 @@ cc_test(
   name = "pitch_test",
   srcs = ["pitch_test.cc"],
   deps = [
-    ":music",
+    ":pitch",
     "@googletest//:gtest_main",
   ],
   size = 'small',

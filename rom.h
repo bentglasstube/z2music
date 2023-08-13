@@ -7,6 +7,7 @@
 
 #include "credits.h"
 #include "pitch.h"
+#include "pitch_lut.h"
 #include "song.h"
 #include "util.h"
 
