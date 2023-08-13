@@ -100,7 +100,11 @@ class Rom {
   void commit(Address address, std::vector<SongTitle> songs);
   Address get_song_table_address(Address loader_address) const;
 
-  void read_pitch_lut();
+  PitchLUT read_pitch_lut() const;
+  Song read_song(Address address, byte entry) const;
+  Pattern read_pattern(Address address) const;
+  std::vector<Note> read_notes(Address address, bool rewrite_triplets,
+                               size_t max_length = 0) const;
 
   void commit_pitch_lut();
 };

@@ -10,20 +10,17 @@
 
 namespace z2music {
 
-class Rom;
-
 class Pattern {
  public:
   enum class Channel { Pulse1, Pulse2, Triangle, Noise };
 
   Pattern();
-  Pattern(const Rom& rom, Address address);
   Pattern(byte tempo, std::vector<Note> pw1, std::vector<Note> pw2,
           std::vector<Note> triangle, std::vector<Note> noise);
   Pattern(byte v1, byte v2, std::vector<Note> pw1, std::vector<Note> pw2,
           std::vector<Note> triangle, std::vector<Note> noise);
 
-  size_t length() const;
+  size_t length() const { return length(Channel::Pulse1); }
 
   void add_notes(Channel ch, std::vector<Note> notes);
   void clear();
@@ -58,8 +55,6 @@ class Pattern {
   bool pad_note_data(Channel ch) const;
   std::vector<byte> note_data(Channel ch) const;
   size_t note_data_length(Channel ch) const;
-
-  void read_notes(Channel ch, const Rom& rom, Address address);
 };
 
 }  // namespace z2music

@@ -1,31 +1,8 @@
 #include "song.h"
 
-#include "rom.h"
-
 namespace z2music {
 
 Song::Song() {}
-
-Song::Song(const Rom& rom, Address address, byte entry) {
-  if (entry > 7) return;
-
-  byte table[8];
-  rom.read(table, address, 8);
-
-  std::unordered_map<byte, byte> offset_map;
-  byte n = 0;
-
-  for (byte i = 0; true; ++i) {
-    byte offset = rom.getc(address + table[entry] + i);
-
-    if (offset == 0) break;
-    if (offset_map.find(offset) == offset_map.end()) {
-      offset_map[offset] = n++;
-      add_pattern(Pattern(rom, address + offset));
-    }
-    append_sequence(offset_map.at(offset));
-  }
-}
 
 void Song::add_pattern(const Pattern& pattern) { patterns_.push_back(pattern); }
 

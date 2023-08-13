@@ -19,43 +19,40 @@ Rom::Rom(const std::string& filename) {
     palace_song_table = get_song_table_address(kPalaceLoader);
     great_palace_song_table = get_song_table_address(kGreatPalaceLoader);
 
-    songs_[SongTitle::TitleIntro] = Song(*this, title_screen_table, 0);
-    songs_[SongTitle::TitleThemeStart] = Song(*this, title_screen_table, 1);
-    songs_[SongTitle::TitleThemeBuildup] = Song(*this, title_screen_table, 2);
-    songs_[SongTitle::TitleThemeMain] = Song(*this, title_screen_table, 3);
-    songs_[SongTitle::TitleThemeBreakdown] = Song(*this, title_screen_table, 4);
+    songs_[SongTitle::TitleIntro] = read_song(title_screen_table, 0);
+    songs_[SongTitle::TitleThemeStart] = read_song(title_screen_table, 1);
+    songs_[SongTitle::TitleThemeBuildup] = read_song(title_screen_table, 2);
+    songs_[SongTitle::TitleThemeMain] = read_song(title_screen_table, 3);
+    songs_[SongTitle::TitleThemeBreakdown] = read_song(title_screen_table, 4);
 
-    songs_[SongTitle::OverworldIntro] = Song(*this, overworld_song_table, 0);
-    songs_[SongTitle::OverworldTheme] = Song(*this, overworld_song_table, 1);
-    songs_[SongTitle::BattleTheme] = Song(*this, overworld_song_table, 2);
-    songs_[SongTitle::CaveItemFanfare] = Song(*this, overworld_song_table, 4);
+    songs_[SongTitle::OverworldIntro] = read_song(overworld_song_table, 0);
+    songs_[SongTitle::OverworldTheme] = read_song(overworld_song_table, 1);
+    songs_[SongTitle::BattleTheme] = read_song(overworld_song_table, 2);
+    songs_[SongTitle::CaveItemFanfare] = read_song(overworld_song_table, 4);
 
-    songs_[SongTitle::TownIntro] = Song(*this, town_song_table, 0);
-    songs_[SongTitle::TownTheme] = Song(*this, town_song_table, 1);
-    songs_[SongTitle::HouseTheme] = Song(*this, town_song_table, 2);
-    songs_[SongTitle::TownItemFanfare] = Song(*this, town_song_table, 4);
+    songs_[SongTitle::TownIntro] = read_song(town_song_table, 0);
+    songs_[SongTitle::TownTheme] = read_song(town_song_table, 1);
+    songs_[SongTitle::HouseTheme] = read_song(town_song_table, 2);
+    songs_[SongTitle::TownItemFanfare] = read_song(town_song_table, 4);
 
-    songs_[SongTitle::PalaceIntro] = Song(*this, palace_song_table, 0);
-    songs_[SongTitle::PalaceTheme] = Song(*this, palace_song_table, 1);
-    songs_[SongTitle::BossTheme] = Song(*this, palace_song_table, 3);
-    songs_[SongTitle::PalaceItemFanfare] = Song(*this, palace_song_table, 4);
-    songs_[SongTitle::CrystalFanfare] = Song(*this, palace_song_table, 6);
+    songs_[SongTitle::PalaceIntro] = read_song(palace_song_table, 0);
+    songs_[SongTitle::PalaceTheme] = read_song(palace_song_table, 1);
+    songs_[SongTitle::BossTheme] = read_song(palace_song_table, 3);
+    songs_[SongTitle::PalaceItemFanfare] = read_song(palace_song_table, 4);
+    songs_[SongTitle::CrystalFanfare] = read_song(palace_song_table, 6);
 
-    songs_[SongTitle::GreatPalaceIntro] =
-        Song(*this, great_palace_song_table, 0);
-    songs_[SongTitle::GreatPalaceTheme] =
-        Song(*this, great_palace_song_table, 1);
-    songs_[SongTitle::ZeldaTheme] = Song(*this, great_palace_song_table, 2);
-    songs_[SongTitle::CreditsTheme] = Song(*this, great_palace_song_table, 3);
+    songs_[SongTitle::GreatPalaceIntro] = read_song(great_palace_song_table, 0);
+    songs_[SongTitle::GreatPalaceTheme] = read_song(great_palace_song_table, 1);
+    songs_[SongTitle::ZeldaTheme] = read_song(great_palace_song_table, 2);
+    songs_[SongTitle::CreditsTheme] = read_song(great_palace_song_table, 3);
     songs_[SongTitle::GreatPalaceItemFanfare] =
-        Song(*this, great_palace_song_table, 4);
-    songs_[SongTitle::TriforceFanfare] =
-        Song(*this, great_palace_song_table, 5);
-    songs_[SongTitle::FinalBossTheme] = Song(*this, great_palace_song_table, 6);
+        read_song(great_palace_song_table, 4);
+    songs_[SongTitle::TriforceFanfare] = read_song(great_palace_song_table, 5);
+    songs_[SongTitle::FinalBossTheme] = read_song(great_palace_song_table, 6);
 
     credits_ = Credits(*this);
 
-    read_pitch_lut();
+    pitch_lut_ = read_pitch_lut();
   }
 }
 
@@ -356,14 +353,111 @@ Address Rom::get_song_table_address(Address loader_address) const {
   return addr;
 }
 
-void Rom::read_pitch_lut() {
-  // TODO read pitch lut
+PitchLUT Rom::read_pitch_lut() const {
+  PitchLUT lut;
   LOG(INFO) << "Reading pitch data from " << kPitchLUTAddress;
   for (byte i = 0; i < 0x7a; i += byte(2)) {
     const Pitch pitch{getwr(kPitchLUTAddress + i)};
-    pitch_lut_.add_pitch(pitch);
+    lut.add_pitch(pitch);
     LOG(INFO) << "Value at offset " << i << ": " << pitch;
   }
+  return lut;
+}
+
+Song Rom::read_song(Address address, byte entry) const {
+  byte table[8];
+  read(table, address, 8);
+
+  std::unordered_map<byte, byte> offset_map;
+  byte n = 0;
+
+  Song song;
+
+  for (byte i = 0; true; ++i) {
+    byte offset = getc(address + table[entry] + i);
+
+    if (offset == 0) break;
+    if (offset_map.find(offset) == offset_map.end()) {
+      offset_map[offset] = n++;
+      song.add_pattern(read_pattern(address + offset));
+    }
+    song.append_sequence(offset_map.at(offset));
+  }
+
+  return song;
+}
+
+Pattern Rom::read_pattern(Address address) const {
+  Pattern pattern;
+
+  byte header[6];
+  read(header, address, 6);
+
+  pattern.tempo(header[0]);
+
+  if (pattern.voiced()) {
+    pattern.set_voicing(getc(address + 6), getc(address + 7));
+  }
+
+  Address note_base = (header[2] << 8) + header[1] + 0x10000;
+
+  bool rewrite = pattern.tempo() & 0x08;
+  pattern.add_notes(Pattern::Channel::Pulse1, read_notes(note_base, rewrite));
+  size_t max_length = pattern.length();
+
+  if (header[3])
+    pattern.add_notes(Pattern::Channel::Triangle,
+                      read_notes(note_base + header[3], rewrite, max_length));
+  if (header[4])
+    pattern.add_notes(Pattern::Channel::Pulse2,
+                      read_notes(note_base + header[4], rewrite, max_length));
+  if (header[5])
+    pattern.add_notes(Pattern::Channel::Noise,
+                      read_notes(note_base + header[5], rewrite, max_length));
+
+  return pattern;
+}
+
+std::vector<Note> Rom::read_notes(Address address, bool rewrite_triplets,
+                                  size_t max_length) const {
+  // const size_t max_length = ch == Channel::Pulse1 ? 64 * 96 : length();
+  size_t length = 0;
+  std::vector<Note> notes;
+
+  while (max_length == 0 || length < max_length) {
+    Note n = Note(getc(address++));
+    // Note data can terminate early on 00 byte
+    if (n == 0x00) break;
+
+    length += n.length();
+    notes.emplace_back(n);
+
+    // FIXME This is all wrong, the duration comes from a LUT which has a number
+    // of ticks for each duration value.  Triplets are encoded using two
+    // different indices in the LUT because the tick length they divide is even
+    // (and thus not divisble by three).  This whole thing needs to be reworked
+    // to use the duration LUT.
+    //
+    // The QuarterTriplet duration has special meaning when preceeded by
+    // two EighthTriplets, which differs based on a tempo flag.
+    if (n.duration() == Note::Duration::QuarterTriplet) {
+      const size_t i = notes.size() - 3;
+      if (notes[i + 0].duration() == Note::Duration::EighthTriplet &&
+          notes[i + 1].duration() == Note::Duration::EighthTriplet) {
+        if (rewrite_triplets) {
+          // If flag 0x08 is set, just count 0xc1 as a third EighthTriplet
+          notes[i + 2].duration(Note::Duration::EighthTriplet);
+        } else {
+          // If flag 0x08 is not set, rewrite the whole sequence
+          notes[i + 0].duration(Note::Duration::DottedEighth);
+          notes[i + 1].duration(Note::Duration::DottedEighth);
+          notes[i + 2].duration(Note::Duration::Eighth);
+        }
+      }
+    }
+  }
+
+  return notes;
 }
 
 void Rom::commit_pitch_lut() {

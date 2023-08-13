@@ -8,12 +8,9 @@
 
 namespace z2music {
 
-class Rom;
-
 class Song {
  public:
   Song();
-  Song(const Rom& rom, Address address, byte entry);
 
   void add_pattern(const Pattern& pattern);
   void set_sequence(const std::vector<byte>& seq);

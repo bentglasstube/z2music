@@ -12,20 +12,18 @@ cc_library(
   visibility = ["//visibility:public"],
   hdrs = [
     "credits.h",
-    "pattern.h",
     "rom.h",
-    "song.h",
   ],
   srcs = [
     "credits.cc",
-    "pattern.cc",
     "rom.cc",
-    "song.cc",
   ],
   deps = [
     ":note",
+    ":pattern",
     ":pitch",
     ":pitch_lut",
+    ":song",
     ":util",
     "@absl//absl/log:log",
   ]
@@ -63,6 +61,24 @@ cc_library(
 )
 
 cc_library(
+  name = "song",
+  hdrs = ["song.h"],
+  srcs = ["song.cc"],
+  deps = [
+    ":pattern",
+  ],
+)
+
+cc_library(
+  name = "pattern",
+  hdrs = ["pattern.h"],
+  srcs = ["pattern.cc"],
+  deps = [
+    ":note",
+  ],
+)
+
+cc_library(
   name = "util",
   hdrs = ["util.h"],
   srcs = ["util.cc"],
@@ -83,7 +99,7 @@ cc_test(
   name = "pattern_test",
   srcs = ["pattern_test.cc"],
   deps = [
-    ":music",
+    ":pattern",
     "@googletest//:gtest_main",
   ],
   size = 'small',
