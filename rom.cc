@@ -50,8 +50,7 @@ Rom::Rom(const std::string& filename) {
     songs_[SongTitle::TriforceFanfare] = read_song(great_palace_song_table, 5);
     songs_[SongTitle::FinalBossTheme] = read_song(great_palace_song_table, 6);
 
-    credits_ = Credits(*this);
-
+    credits_ = read_credits(kCreditsTableAddress);
     pitch_lut_ = read_pitch_lut();
   }
 }
@@ -98,6 +97,76 @@ void Rom::write(Address address, std::vector<byte> data) {
   }
 }
 
+namespace {
+char z2_decode_(byte data) {
+  switch (data) {
+    case 0x07:
+      return '!';
+    case 0xce:
+      return '/';
+    case 0xcf:
+      return '.';
+    case 0xf4:
+      return ' ';
+    case 0xf5:
+      return ' ';
+  }
+
+  if (data >= 0xd0 && data <= 0xd9) return data - 0xa0;
+  if (data >= 0xda && data <= 0xf3) return data - 0x99;
+
+  LOG(ERROR) << "Cannot decode byte '" << data << "'";
+
+  return 0x00;
+}
+
+byte z2_encode_(char data) {
+  switch (data) {
+    case ' ':
+      return 0xf4;
+    case '.':
+      return 0xcf;
+    case '/':
+      return 0xce;
+    case '!':
+      return 0x07;
+  }
+
+  if (data >= 0x30 && data <= 0x39) return data + 0xa0;
+  if (data >= 0x41 && data <= 0x5a) return data + 0x99;
+  if (data >= 0x61 && data <= 0x7a) return data + 0x79;
+
+  LOG(ERROR) << "Cannot encode character '" << data << "'";
+
+  return 0x00;
+}
+}  // namespace
+
+std::string Rom::read_string(Address address) const {
+  const byte flag = getc(address);
+  if (flag != 0x22) return "";
+
+  const byte length = getc(address + 2);
+
+  std::string s = "";
+  for (byte i = 0; i < length; ++i) {
+    s.append(1, z2_decode_(getc(address + i + 3)));
+  }
+
+  LOG(INFO) << "Found string at " << address << " - [" << s << "]";
+
+  return s;
+}
+
+Address Rom::write_string(Address address, const std::string& s) {
+  byte length = s.length();
+  putc(address, length);
+  for (byte i = 0; i < length; ++i) {
+    putc(address + i + 1, z2_encode_(s.at(i)));
+  }
+  return address + length + 1;
+}
+
 bool Rom::commit() {
   commit(title_screen_table,
          {SongTitle::TitleIntro, SongTitle::TitleThemeStart,
@@ -121,7 +190,7 @@ bool Rom::commit() {
           SongTitle::GreatPalaceItemFanfare, SongTitle::TriforceFanfare,
           SongTitle::FinalBossTheme});
 
-  credits_.commit(*this);
+  commit_credits(kCreditsTableAddress);
   commit_pitch_lut();
 
   return true;
@@ -460,9 +529,58 @@ std::vector<Note> Rom::read_notes(Address address, bool rewrite_triplets,
   return notes;
 }
 
+Credits Rom::read_credits(Address address) const {
+  Credits credits;
+
+  for (size_t i = 0; i < Credits::kPages; ++i) {
+    const Address addr = address + 4 * i;
+
+    const Address title = getw(addr) + kCreditsBankOffset;
+    const Address names = getw(addr + 2) + kCreditsBankOffset;
+
+    credits[i].title = read_string(title);
+    credits[i].name1 = read_string(names);
+    credits[i].name2 = read_string(names + credits[i].name1.length() + 3);
+  }
+
+  return credits;
+}
+
 void Rom::commit_pitch_lut() {
   for (byte i = 0; i < 0x7a; i += byte(2)) {
     putwr(kPitchLUTAddress + i, pitch_lut_.at(i).timer);
+  }
+}
+
+void Rom::commit_credits(Address address) {
+  Address table = address;
+  Address data = address + 4 * Credits::kPages;
+
+  for (const auto& credit : credits_) {
+    // Add entry for title
+    if (credit.title.length() > 0) {
+      putw(table, data - kCreditsBankOffset);
+      write(data, {0x22, 0x47});
+      data = write_string(data + 2, credit.title);
+      putc(data++, 0xff);
+    } else {
+      // optimization if the title is empty, just point to the previous title
+      putw(table, getw(table - 4));
+    }
+
+    // Add entry for name1
+    putw(table + 2, data - kCreditsBankOffset);
+    write(data, {0x22, 0x8b});
+    data = write_string(data + 2, credit.name1);
+
+    // Add entry for name2 if present
+    if (credit.name2.length() > 0) {
+      write(data, {0x22, 0xcb});
+      data = write_string(data + 2, credit.name2);
+    }
+
+    putc(data++, 0xff);
+    table += 4;
   }
 }
 

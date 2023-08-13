@@ -8,12 +8,9 @@
 
 namespace z2music {
 
-class Rom;
-
 class Credits {
  public:
-  Credits();
-  Credits(const Rom& rom);
+  Credits() {}
 
   struct Text {
     std::string title;
@@ -21,16 +18,18 @@ class Credits {
     std::string name2;
   };
 
-  void set(byte page, const Text& text);
-  Text get(byte page) const;
-  void commit(Rom& rom) const;
+  Text get(byte page) const { return credits_[page]; }
+
+  const Text operator[](byte page) const { return credits_[page]; }
+  Text& operator[](byte page) { return credits_[page]; }
+
+  static constexpr byte kPages = 9;
+
+  const Text* begin() const { return &credits_[0]; }
+  const Text* end() const { return &credits_[kPages]; }
 
  private:
-  static constexpr Address kCreditsTableAddress = 0x015259;
-  static constexpr Address kCreditsBankOffset = 0xc000;
-  static constexpr byte kCreditsPages = 9;
-
-  std::array<Text, kCreditsPages> credits_;
+  std::array<Text, kPages> credits_;
 };
 
 }  // namespace z2music

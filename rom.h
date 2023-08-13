@@ -68,6 +68,9 @@ class Rom {
   void read(byte* buffer, Address address, size_t length) const;
   void write(Address address, std::vector<byte> data);
 
+  std::string read_string(Address address) const;
+  Address write_string(Address address, const std::string& s);
+
   bool commit();
   void save(const std::string& filename);
   void move_song_table(Address loader_address, Address base_address);
@@ -83,6 +86,9 @@ class Rom {
   static constexpr size_t kHeaderSize = 0x10;
   static constexpr size_t kRomSize = 0x040000;
   static constexpr size_t kPitchLUTAddress = 0x01918f;
+
+  static constexpr Address kCreditsTableAddress = 0x015259;
+  static constexpr Address kCreditsBankOffset = 0xc000;
 
   byte header_[kHeaderSize];
   byte data_[kRomSize];
@@ -106,7 +112,10 @@ class Rom {
   std::vector<Note> read_notes(Address address, bool rewrite_triplets,
                                size_t max_length = 0) const;
 
+  Credits read_credits(Address address) const;
+
   void commit_pitch_lut();
+  void commit_credits(Address address);
 };
 
 }  // namespace z2music

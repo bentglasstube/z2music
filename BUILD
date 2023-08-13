@@ -1,5 +1,9 @@
 load("@crt//rules:pkg_win.bzl", "pkg_win");
 
+package(
+  default_visibility = ["//visibility:public"],
+)
+
 config_setting(
   name = "windows",
   constraint_values = [
@@ -8,17 +12,17 @@ config_setting(
 )
 
 cc_library(
-  name = "music",
-  visibility = ["//visibility:public"],
-  hdrs = [
-    "credits.h",
-    "rom.h",
-  ],
-  srcs = [
-    "credits.cc",
-    "rom.cc",
-  ],
+  name = "credits",
+  hdrs = ["credits.h"],
+  deps = [":util"],
+)
+
+cc_library(
+  name = "rom",
+  hdrs = ["rom.h"],
+  srcs = ["rom.cc"],
   deps = [
+    ":credits",
     ":note",
     ":pattern",
     ":pitch",

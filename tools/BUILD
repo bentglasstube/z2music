@@ -7,7 +7,10 @@ package(
 cc_binary(
   name = "credits_dump",
   srcs = ["credits_dump.cc"],
-  deps = ["//:music"],
+  deps = [
+    "//:credits",
+    "//:rom",
+  ],
   linkopts = select({
     "//:windows": [
       "-ldbghelp",
@@ -26,7 +29,7 @@ cc_binary(
   name = "modder",
   srcs = ["modder.cc"],
   deps = [
-    "//:music",
+    "//:rom",
     "//:util",
     "@absl//absl/flags:flag",
     "@absl//absl/flags:parse",
@@ -52,7 +55,7 @@ cc_binary(
   name = "music_dump",
   srcs = ["music_dump.cc"],
   deps = [
-    "//:music",
+    "//:rom",
     "//:util",
     "@absl//absl/flags:parse",
     "@absl//absl/flags:usage",
@@ -76,7 +79,7 @@ cc_binary(
   name = "pitch_dump",
   srcs = ["pitch_dump.cc"],
   deps = [
-    "//:music",
+    "//:rom",
     "@absl//absl/flags:parse",
     "@absl//absl/flags:usage",
     "@absl//absl/log:flags",
