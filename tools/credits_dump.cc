@@ -11,11 +11,9 @@ int main(int argc, char** argv) {
 
   const std::string file = std::string(argv[1]);
   z2music::Rom rom(file);
-  const z2music::Credits* credits = rom.credits();
 
   std::cout << "====================" << std::endl;
-  for (size_t i = 0; i < 9; ++i) {
-    const auto text = credits->get(i);
+  for (const auto text : rom.credits()) {
     std::cout << text.title << std::endl;
     std::cout << "    " << text.name1 << std::endl;
     std::cout << "    " << text.name2 << std::endl;

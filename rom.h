@@ -79,8 +79,8 @@ class Rom {
   const Song* song(const std::string& name) const;
   Song* song(SongTitle title) { return &songs_[title]; }
   const Song* song(SongTitle title) const { return &songs_.at(title); }
-  Credits* credits() { return &credits_; }
-  PitchLUT* pitch_lut() { return &pitch_lut_; }
+  Credits& credits() { return credits_; }
+  PitchLUT& pitch_lut() { return pitch_lut_; }
 
  private:
   static constexpr size_t kHeaderSize = 0x10;

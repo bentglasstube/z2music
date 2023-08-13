@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
       std::cout << std::setfill('0') << std::setw(2) << i;
     }
 
-    std::cout << std::setfill(' ') << std::setw(6) << lut->at(i).to_string();
+    std::cout << std::setfill(' ') << std::setw(6) << lut[i].to_string();
 
     if (i % 0x10 == 0x0e) std::cout << std::endl;
   }
