@@ -1,0 +1,73 @@
+song PalaceIntro
+pattern 0x08
+E5.2 C5 A4 E4 C5 A4 E4 C4 A4 E4 C4 A3 E4 C4 A3 E3
+r.8 r r r
+r.8 r r r
+
+sequence 1
+
+song PalaceTheme
+pattern 0x28
+A3.2 E4 A4 C5.8 r.2 A3 E4 A4 C5.4 E5.2 C5.4 A3.2 E4 A4 C5.8 r.2 A3 E4 A4 C5.4 E5.2 C5 E5
+r.8 r r r r r r r
+r.8 r r r r r r r
+G#3.4 G#3.2 G#3.6 G#3.4
+pattern 0x28
+G3.2 D4 G4 B4.8 r.2 G3 D4 G4 B4.4 D5.2 B4.4 G3.2 D4 G4 B4.8 r.2 G3 D4 G4 B4.4 D5.2 B4 D5
+r.8 r r r r r r r
+r.8 r r r r r r r
+G#3.4 G#3.2 G#3.6 G#3.4
+pattern 0x28
+E5.8 r.4 D5 G5.6 F5 D5.4 E5.8 r.4 D5 G5.6 F5 C5.4
+A3.2 E4 A4 C5.8 r.2 A3 E4 A4 C5.4 E5.2 C5.4 A3.2 E4 A4 C5.8 r.2 A3 E4 A4 C5.4 E5.2 C5 E5
+A3.2 A3 A3 A3 A3 A3 A3 A3 B3 B3 B3 B3 B3 B3 B3 B3 C4 C4 C4 C4 C4 C4 C4 C4 D4 D4 D4 D4 D4 D4 D4 D4
+G#3.4 G#3.2 G#3.6 G#3.4
+pattern 0x28
+B4.8 r.4 A4 B4.6 C5 D5.4 B4.8 r.4 A4 B4.8 G4
+A3.2 E4 A4 C5.8 r.2 A3 E4 A4 C5.4 E5.2 C5.4 A3.2 E4 A4 C5.8 r.2 A3 E4 A4 C5.4 E5.2 C5 E5
+G3.2 G3 G3 G3 G3 G3 G3 G3 A3 A3 A3 A3 A3 A3 A3 A3 B3 B3 B3 B3 B3 B3 B3 B3 C4 C4 C4 C4 C4 C4 C4 C4
+G#3.4 G#3.2 G#3.6 G#3.4
+pattern 0x28
+r.2 F5 F5 F5 E5.8 r.2 F5 F5 F5 E5.4 C5 r.2 F5 F5 F5 E5.4 C5 B4.6 C5 D5.4
+A3.2 E4 A4 C5.8 r.2 A3 E4 A4 C5.4 E5.2 C5.4 A3.2 E4 A4 C5.8 r.2 A3 E4 A4 C5.4 E5.2 C5 E5
+A3.2 A3 A3 A3 A3 A3 A3 A3 B3 B3 B3 B3 B3 B3 B3 B3 C4 C4 C4 C4 C4 C4 C4 C4 D4 D4 D4 D4 D4 D4 D4 D4
+G#3.4 G#3.2 G#3.6 G#3.4
+pattern 0x28
+A4.8 r.4 G4 A4.6 B4 C5.4 A4.8 r.4 G4 A4.8 G#4
+A3.2 E4 A4 C5.8 r.2 A3 E4 A4 C5.4 E5.2 C5.4 A3.2 E4 A4 C5.8 r.2 A3 E4 A4 C5.4 E5.2 C5 E5
+G3.2 G3 G3 G3 G3 G3 G3 G3 A3 A3 A3 A3 A3 A3 A3 A3 B3 B3 B3 B3 B3 B3 B3 B3 C4 C4 C4 C4 C4 C4 C4 C4
+G#3.4 G#3.2 G#3.6 G#3.4
+sequence 1 2 3 4 3 4 5 6 3 4 3 4 5 6
+
+song CreditsTheme
+pattern 0x28
+r.2 E5 E5 D#5 E5 F#5.1 G5.6 r.1 E5.4 D#5.2 E5 F#5.1 G5.6 r.1 E5.2 E5 D#5 E5 F#5.1 G5.3 A5.2 F#5.8 r
+r.8 r r r r r r r
+E4.2 r E4 r B3 r D4 r E4 r E4 r B3 r D4 r E4 r E4 r B3 r D4 r B3 r D#4 r F#4 r B4 r
+
+pattern 0x28
+r.2 A5.4 A5.2 A5 G5.1 F#5.6 r.1 A5.2 A5 A5 A5 G5.1 F#5.6 r.1 A5.4 A5.2 A5 G5.1 F#5.3 G5.2 E5.8 r
+r.8 r r r r r r r
+B3.2 r D#4 r F#4 r B4 r B3 r D#4 r F#4 r B4 r B3 r D#4 r F#4 r B4 r E4 r E4 r B3 r D4 r
+
+pattern 0x28
+G5.4 F#5.2 E5.4 G5.2 F#5 E5 G5.4 F#5.2 F#5 E5 C5.4 B4.8 r r.2
+r.8 r r r r r
+E4.2 r C5 r E4 r C5 r E4 r C5 r E4 r C5 r E4 r E4 r B3 r D4 r
+
+pattern 0x28
+G5.4 F#5.2 E5.4 G5.2 F#5 E5 A5.4 G5.2 G5 F#5 G5.4 F#5.8 r r.2 G5.8 F#5
+r.8 r r r r r r r
+E4.2 r C5 r E4 r C5 r E4 r C5 r E4 r C5 r B3 r D#4 r F#4 r A4 r B4 r A4 r F#4 r D#4 r
+
+pattern 0x28
+G5.4 F#5 G5 F#5 G5.2 F#5 E5 F#5 G5 F#5 G5 A5 G5.4 F#5 G5 F#5 G5.2 F#5 E5 F#5 G5 A5 G5 F#5
+r.8 r r r r r r r
+E4.2 r A4 r E4 r A4 r E4 r A4 r E4 r A4 r D#4 r A4 r D#4 r A4 r D#4 r A4 r D#4 r A4 r
+
+pattern 0x28
+G5.4 F#5 G5 F#5 G5.2 F#5 E5 F#5 G5 A5 G5 A5 B5.8 r r B5
+r.8 r r r r r r r
+D4.2 r A4 r D4 r A4 r D4 r A4 r D4 r A4 r B3 r D#4 r F#4 r A4 r B4 r A4 r G4 r D#4 r
+
+sequence 1 2 1 2 1 2 1 2 3 4 1 2 3 4 5 6

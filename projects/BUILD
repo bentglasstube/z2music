@@ -31,5 +31,7 @@ filegroup(
   srcs = [
     "amida.z2music",
     "rog.z2music",
+    "solstice.z2music",
+    "benthic_king.z2music",
   ],
 )
