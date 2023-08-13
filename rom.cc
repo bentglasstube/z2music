@@ -51,7 +51,7 @@ Rom::Rom(const std::string& filename) {
     songs_[SongTitle::FinalBossTheme] = read_song(great_palace_song_table, 6);
 
     credits_ = read_credits(kCreditsTableAddress);
-    pitch_lut_ = read_pitch_lut();
+    pitch_lut_ = read_pitch_lut(kPitchLUTAddress);
   }
 }
 
@@ -191,7 +191,7 @@ bool Rom::commit() {
           SongTitle::FinalBossTheme});
 
   commit_credits(kCreditsTableAddress);
-  commit_pitch_lut();
+  commit_pitch_lut(kPitchLUTAddress);
 
   return true;
 }
@@ -422,11 +422,11 @@ Address Rom::get_song_table_address(Address loader_address) const {
   return addr;
 }
 
-PitchLUT Rom::read_pitch_lut() const {
+PitchLUT Rom::read_pitch_lut(Address address) const {
   PitchLUT lut;
-  LOG(INFO) << "Reading pitch data from " << kPitchLUTAddress;
+  LOG(INFO) << "Reading pitch data from " << address;
   for (byte i = 0; i < 0x7a; i += byte(2)) {
-    const Pitch pitch{getwr(kPitchLUTAddress + i)};
+    const Pitch pitch{getwr(address + i)};
     lut.add_pitch(pitch);
     LOG(INFO) << "Value at offset " << i << ": " << pitch;
   }
@@ -546,9 +546,9 @@ Credits Rom::read_credits(Address address) const {
   return credits;
 }
 
-void Rom::commit_pitch_lut() {
+void Rom::commit_pitch_lut(Address address) {
   for (byte i = 0; i < 0x7a; i += byte(2)) {
-    putwr(kPitchLUTAddress + i, pitch_lut_.at(i).timer);
+    putwr(address + i, pitch_lut_.at(i).timer);
   }
 }
 
