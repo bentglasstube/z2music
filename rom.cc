@@ -54,7 +54,8 @@ Rom::Rom(const std::string& filename) {
     songs_[SongTitle::FinalBossTheme] = Song(*this, great_palace_song_table, 6);
 
     credits_ = Credits(*this);
-    pitch_lut_ = PitchLUT(*this, kPitchLUTAddress);
+
+    read_pitch_lut();
   }
 }
 
@@ -124,7 +125,7 @@ bool Rom::commit() {
           SongTitle::FinalBossTheme});
 
   credits_.commit(*this);
-  pitch_lut_.commit(*this, kPitchLUTAddress);
+  commit_pitch_lut();
 
   return true;
 }
@@ -353,6 +354,22 @@ Address Rom::get_song_table_address(Address loader_address) const {
             << std::setw(4) << std::setfill('0') << (addr & 0xffff) << ",y at "
             << loader_address;
   return addr;
+}
+
+void Rom::read_pitch_lut() {
+  // TODO read pitch lut
+  LOG(INFO) << "Reading pitch data from " << kPitchLUTAddress;
+  for (byte i = 0; i < 0x7a; i += byte(2)) {
+    const Pitch pitch{getwr(kPitchLUTAddress + i)};
+    pitch_lut_.add_pitch(pitch);
+    LOG(INFO) << "Value at offset " << i << ": " << pitch;
+  }
+}
+
+void Rom::commit_pitch_lut() {
+  for (byte i = 0; i < 0x7a; i += byte(2)) {
+    putwr(kPitchLUTAddress + i, pitch_lut_.at(i).timer);
+  }
 }
 
 }  // namespace z2music

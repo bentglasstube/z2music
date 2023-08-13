@@ -99,6 +99,10 @@ class Rom {
 
   void commit(Address address, std::vector<SongTitle> songs);
   Address get_song_table_address(Address loader_address) const;
+
+  void read_pitch_lut();
+
+  void commit_pitch_lut();
 };
 
 }  // namespace z2music

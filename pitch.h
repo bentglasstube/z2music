@@ -13,6 +13,7 @@ namespace z2music {
 
 class Pitch {
  public:
+  Pitch() : timer(0) {}
   Pitch(WordBE timer) : timer(timer) {}
 
   WordBE timer;

@@ -1,37 +1,30 @@
 #include "pitch_lut.h"
 
 #include "absl/log/log.h"
-#include "rom.h"
 
 namespace z2music {
 
-PitchLUT::PitchLUT(const Rom& rom, Address address) {
-  LOG(INFO) << "Reading pitch data from " << address;
-  for (byte i = 0; i < 0x7a; i += byte(2)) {
-    const WordBE timer = rom.getwr(address + i);
-    const Pitch pitch{timer};
-    table_[pitch] = i;
-    LOG(INFO) << "Value at offset " << i << ": " << pitch;
-  }
-}
-
-byte PitchLUT::index_for(Pitch pitch) const {
-  auto it = table_.find(pitch);
-  return it == table_.end() ? byte(0) : it->second;
-}
-
 Pitch PitchLUT::at(byte index) const {
-  for (const auto t : table_) {
-    if (t.second == index) return t.first;
-  }
-  return Pitch::none();
+  return index / 2 < table_.size() ? table_[index / 2] : Pitch::none();
 }
 
-void PitchLUT::commit(Rom& rom, Address address) const {
-  for (const auto t : table_) {
-    rom.putwr(address + t.second, t.first.timer);
+byte PitchLUT::index_for(const Pitch& pitch) const {
+  for (size_t i = 0; i < table_.size(); ++i) {
+    if (table_[i] == pitch) return i * 2;
   }
-  return;
+  return 0;
+}
+
+bool PitchLUT::has_pitch(const Pitch& pitch) const {
+  for (size_t i = 0; i < table_.size(); ++i) {
+    if (table_[i] == pitch) return true;
+  }
+  return false;
+}
+
+byte PitchLUT::add_pitch(const Pitch& pitch) {
+  table_.push_back(std::move(pitch));
+  return table_.size() * 2 - 2;
 }
 
 }  // namespace z2music
