@@ -21,9 +21,10 @@ std::string read_line(std::istream& file) {
 }
 
 z2music::Song* get_song_by_name(z2music::Rom& rom, const std::string& name) {
-  auto song = rom.song(name);
-  if (!song) LOG(FATAL) << "Unknown song name " << name;
-  return song;
+  auto title = rom.title_by_name(name);
+  if (title == z2music::Rom::SongTitle::Unknown)
+    LOG(FATAL) << "Unknown song name " << name;
+  return &rom.song(title);
 }
 
 z2music::Address get_loader_by_name(z2music::Rom& rom,

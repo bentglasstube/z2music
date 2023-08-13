@@ -40,21 +40,21 @@ class Pattern {
 
   size_t metadata_length() const { return voiced() ? 8 : 6; }
 
-  std::vector<byte> note_data() const;
   std::vector<byte> meta_data(Address pw1_address) const;
 
   static std::vector<Note> parse_notes(const std::string& data,
                                        int transpose = 0);
   std::string dump_notes(Channel ch) const;
 
+  bool pad_note_data(Channel ch) const;
+  size_t note_data_length() const;
+  size_t note_data_length(Channel ch) const;
+
  private:
   byte tempo_, voice1_, voice2_;
   std::unordered_map<Channel, std::vector<Note>> notes_;
 
   size_t length(Channel ch) const;
-  bool pad_note_data(Channel ch) const;
-  std::vector<byte> note_data(Channel ch) const;
-  size_t note_data_length(Channel ch) const;
 };
 
 }  // namespace z2music

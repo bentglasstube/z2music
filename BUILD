@@ -18,58 +18,13 @@ cc_library(
 )
 
 cc_library(
-  name = "rom",
-  hdrs = ["rom.h"],
-  srcs = ["rom.cc"],
-  deps = [
-    ":credits",
-    ":note",
-    ":pattern",
-    ":pitch",
-    ":pitch_lut",
-    ":song",
-    ":util",
-    "@absl//absl/log:log",
-  ]
-)
-
-cc_library(
   name = "note",
   hdrs = ["note.h"],
   srcs = ["note.cc"],
   deps = [
-    ":util",
     "@absl//absl/log:log",
-  ],
-)
-
-cc_library(
-  name = "pitch",
-  hdrs = ["pitch.h"],
-  srcs = ["pitch.cc"],
-  deps = [
-    ":util",
-    "@absl//absl/log:log",
-  ],
-)
-
-cc_library(
-  name = "pitch_lut",
-  hdrs = ["pitch_lut.h"],
-  srcs = ["pitch_lut.cc"],
-  deps = [
     ":pitch",
     ":util",
-    "@absl//absl/log:log",
-  ],
-)
-
-cc_library(
-  name = "song",
-  hdrs = ["song.h"],
-  srcs = ["song.cc"],
-  deps = [
-    ":pattern",
   ],
 )
 
@@ -78,7 +33,53 @@ cc_library(
   hdrs = ["pattern.h"],
   srcs = ["pattern.cc"],
   deps = [
+    "@absl//absl/log:log",
     ":note",
+    ":util",
+  ],
+)
+
+cc_library(
+  name = "pitch",
+  hdrs = ["pitch.h"],
+  srcs = ["pitch.cc"],
+  deps = [":util"],
+)
+
+cc_library(
+  name = "pitch_lut",
+  hdrs = ["pitch_lut.h"],
+  srcs = ["pitch_lut.cc"],
+  deps = [
+    "@absl//absl/log:log",
+    ":pitch",
+    ":util",
+  ],
+)
+
+cc_library(
+  name = "rom",
+  hdrs = ["rom.h"],
+  srcs = ["rom.cc"],
+  deps = [
+    "@absl//absl/log:log",
+    ":credits",
+    ":note",
+    ":pattern",
+    ":pitch",
+    ":pitch_lut",
+    ":song",
+    ":util",
+  ]
+)
+
+cc_library(
+  name = "song",
+  hdrs = ["song.h"],
+  srcs = ["song.cc"],
+  deps = [
+    ":pattern",
+    ":util",
   ],
 )
 
@@ -86,15 +87,14 @@ cc_library(
   name = "util",
   hdrs = ["util.h"],
   srcs = ["util.cc"],
-  visibility = ["//visibility:public"],
 )
 
 cc_test(
   name = "pitch_test",
   srcs = ["pitch_test.cc"],
   deps = [
-    ":pitch",
     "@googletest//:gtest_main",
+    ":pitch",
   ],
   size = 'small',
 )
@@ -103,8 +103,12 @@ cc_test(
   name = "pattern_test",
   srcs = ["pattern_test.cc"],
   deps = [
-    ":pattern",
+    "@absl//absl/log:log",
     "@googletest//:gtest_main",
+    ":note",
+    ":pattern",
+    ":pitch",
+    ":rom",
   ],
   size = 'small',
 )

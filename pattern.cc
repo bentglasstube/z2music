@@ -62,24 +62,6 @@ void Pattern::set_voicing(byte v1, byte v2) {
   voice2_ = v2;
 }
 
-std::vector<byte> Pattern::note_data() const {
-  std::vector<byte> b;
-
-  const std::array<Channel, 4> channels = {
-      Channel::Pulse1,
-      Channel::Pulse2,
-      Channel::Triangle,
-      Channel::Noise,
-  };
-
-  for (auto ch : channels) {
-    const std::vector<byte> c = note_data(ch);
-    b.insert(b.end(), c.begin(), c.end());
-  }
-
-  return b;
-}
-
 std::vector<byte> Pattern::meta_data(Address pw1_address) const {
   // FIXME calculate which channels need extra bytes :(
   const size_t pw1 = note_data_length(Channel::Pulse1);
@@ -115,26 +97,29 @@ size_t Pattern::length(Pattern::Channel ch) const {
 
 bool Pattern::pad_note_data(Pattern::Channel ch) const {
   if (ch == Channel::Pulse1) return true;
+  if (ch != Channel::Noise) return false;
 
   const size_t l = length(ch);
   return l > 0 && l < length();
 }
 
-std::vector<byte> Pattern::note_data(Pattern::Channel ch) const {
-  std::vector<byte> b;
-  b.reserve(notes_.at(ch).size() + 1);
-
-  for (auto n : notes_.at(ch)) {
-    b.push_back(n);
-  }
-  if (pad_note_data(ch)) b.push_back(0);
-
-  return b;
+size_t Pattern::note_data_length() const {
+  return note_data_length(Channel::Pulse1) + note_data_length(Channel::Pulse2) +
+         note_data_length(Channel::Triangle) + note_data_length(Channel::Noise);
 }
 
 size_t Pattern::note_data_length(Pattern::Channel ch) const {
   return notes_.at(ch).size() + (pad_note_data(ch) ? 1 : 0);
 }
+
+namespace {
+Note build_note(int pitch, int octave, int duration, bool triplet,
+                int transpose) {
+  const int note = pitch > 0 ? pitch + 12 * octave + 11 + transpose : 0;
+  const int ticks = (triplet ? 4 : 6) * 4 * duration;
+  return Note(note == 0 ? Pitch::none() : Pitch::from_midi(note), ticks);
+}
+}  // namespace
 
 std::vector<Note> Pattern::parse_notes(const std::string& data, int transpose) {
   std::vector<Note> notes;
@@ -232,10 +217,8 @@ std::vector<Note> Pattern::parse_notes(const std::string& data, int transpose) {
 
       case ' ':
         if (pitch && octave && duration) {
-          const int note = pitch > 0 ? pitch + 12 * octave + 11 + transpose : 0;
-          const int ticks = (triplet ? 4 : 6) * duration;
-          notes.push_back(z2music::Note::from_midi(note, ticks));
-
+          notes.push_back(
+              build_note(pitch, octave, duration, triplet, transpose));
           // Keep duration for later notes, but reset pitch and octave
           pitch = 0;
           octave = 0;
@@ -250,9 +233,7 @@ std::vector<Note> Pattern::parse_notes(const std::string& data, int transpose) {
 
   // Add final note
   if (pitch && octave && duration) {
-    const int note = pitch > 0 ? pitch + 12 * octave + 11 + transpose : 0;
-    const int ticks = (triplet ? 4 : 6) * duration;
-    notes.push_back(z2music::Note::from_midi(note, ticks));
+    notes.push_back(build_note(pitch, octave, duration, triplet, transpose));
   }
 
   return notes;
@@ -266,7 +247,7 @@ std::string Pattern::dump_notes(Channel ch) const {
     auto duration = note.duration();
 
     if (output.tellp() > 0) output << " ";
-    output << note.pitch_string();
+    output << note.pitch();
 
     if (duration != prev_dur) {
       output << "." << note.duration_string();

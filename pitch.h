@@ -6,7 +6,6 @@
 #include <map>
 #include <string>
 
-#include "absl/log/log.h"
 #include "util.h"
 
 namespace z2music {
@@ -51,7 +50,6 @@ class Pitch {
   float freq() const { return kCPURate / (16.0f * (timer + 1)); }
   static Pitch from_freq(float freq) {
     int timer = static_cast<WordBE>(std::round(kCPURate / (16 * freq) - 1));
-    LOG(INFO) << "Calculated timer for frequency " << freq << " as " << timer;
     return Pitch(timer);
   }
 
@@ -61,8 +59,6 @@ class Pitch {
   }
   static Pitch from_midi(int midi) {
     float freq = pow(2.f, (midi - Midi::A4) / 12.f) * 440.f;
-    LOG(INFO) << "Calculated frequency for midi note " << midi << " as "
-              << freq;
     return from_freq(freq);
   }
 

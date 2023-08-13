@@ -1,52 +1,91 @@
 #include "pattern.h"
 
+#include <array>
+#include <sstream>
+
+#include "absl/log/log.h"
 #include "gtest/gtest.h"
 #include "note.h"
+#include "pitch.h"
+#include "rom.h"
 
 namespace z2music {
 
-namespace {
-void EXPECT_DATA_EQ(const Pattern& pattern, const std::vector<byte> metadata,
-                    const std::vector<byte> data) {
-  EXPECT_EQ(pattern.meta_data(0x1234), metadata);
-  EXPECT_EQ(pattern.note_data(), data);
-}
-}  // namespace
+class TestWithFakeRom : public ::testing::Test {
+ protected:
+  Rom rom;
 
-TEST(PatternTest, SingleChannel) {
-  Pattern pattern = Pattern(0x18,
-                            {Note::Pitch::A4 | Note::Duration::Eighth,
-                             Note::Pitch::C5 | Note::Duration::Quarter,
-                             Note::Pitch::E5 | Note::Duration::Half},
-                            {}, {}, {});
+  TestWithFakeRom() {
+    std::array<int, 59> pitches = {
+        Pitch::E3,  Pitch::G3,  Pitch::Gs3, Pitch::A3,  Pitch::As3, Pitch::B3,
+        Pitch::C4,  Pitch::Cs4, Pitch::D4,  Pitch::Ds4, Pitch::E4,  Pitch::F4,
+        Pitch::Fs4, Pitch::G4,  Pitch::Gs4, Pitch::A4,  Pitch::As4, Pitch::B4,
+        Pitch::C5,  Pitch::Cs5, Pitch::D5,  Pitch::Ds5, Pitch::E5,  Pitch::F5,
+        Pitch::Fs5, Pitch::G5,  Pitch::A5,  Pitch::As5, Pitch::B5,  Pitch::Cs3,
+        Pitch::D3,  Pitch::Ds3, Pitch::F3,  Pitch::Fs3, Pitch::Gs5, Pitch::C6,
+        Pitch::Cs6, Pitch::D6,  Pitch::Ds6, Pitch::E6,  Pitch::F6,  Pitch::Fs6,
+        Pitch::G6,  Pitch::Gs6, Pitch::A6,  Pitch::As6, Pitch::B6,  Pitch::C7,
+        Pitch::Cs7, Pitch::D7,  Pitch::Ds7, Pitch::E7,  Pitch::F7,  Pitch::Fs7,
+        Pitch::G7,  Pitch::Gs7, Pitch::A7,  Pitch::As7, Pitch::B7};
+    rom.pitch_lut().add_pitch(Pitch::from_midi(Pitch::C3));
+    rom.pitch_lut().add_pitch(Pitch::none());
+    for (auto const p : pitches) {
+      rom.pitch_lut().add_pitch(Pitch::from_midi(p));
+    }
+  }
+
+  void EXPECT_DATA_EQ(const Pattern& pattern, const std::vector<byte> metadata,
+                      const std::vector<byte> data) {
+    EXPECT_EQ(pattern.meta_data(0x1234), metadata);
+
+    auto note_data = rom.encode_pattern(pattern);
+    EXPECT_EQ(note_data, data);
+  }
+};
+
+TEST_F(TestWithFakeRom, SingleChannel) {
+  std::ostringstream data;
+  for (const auto p : rom.pitch_lut()) {
+    data << p.to_string() << " ";
+  }
+  LOG(INFO) << "Pitch LUT data: " << data.str();
+
+  Pattern pattern =
+      Pattern(0x18,
+              {{Pitch::from_midi(Pitch::A4), Note::Duration::Eighth},
+               {Pitch::from_midi(Pitch::C5), Note::Duration::Quarter},
+               {Pitch::from_midi(Pitch::E5), Note::Duration::Half}},
+              {}, {}, {});
 
   EXPECT_DATA_EQ(pattern, {0x18, 0x34, 0x12, 0x00, 0x00, 0x00},
                  {0xa2, 0xe8, 0x71, 0x00});
 }
 
-TEST(PatternTest, AllChannels) {
-  Pattern pattern = Pattern(0x20, {Note::Pitch::A4 | Note::Duration::Half},
-                            {Note::Pitch::C5 | Note::Duration::Half},
-                            {Note::Pitch::E5 | Note::Duration::Half},
-                            {Note::Pitch::Gs3 | Note::Duration::Sixteenth});
+TEST_F(TestWithFakeRom, AllChannels) {
+  Pattern pattern =
+      Pattern(0x20, {{Pitch::from_midi(Pitch::A4), Note::Duration::Half}},
+              {{Pitch::from_midi(Pitch::C5), Note::Duration::Half}},
+              {{Pitch::from_midi(Pitch::E5), Note::Duration::Half}},
+              {{Pitch::from_midi(Pitch::Gs3), Note::Duration::Sixteenth}});
 
   EXPECT_DATA_EQ(pattern, {0x20, 0x34, 0x12, 0x03, 0x02, 0x04},
                  {0x63, 0x00, 0x69, 0x71, 0x08, 0x00});
 }
 
-TEST(PatternTest, Triplets) {
-  Pattern pattern = Pattern(0x18,
-                            {Note::Pitch::C3 | Note::Duration::EighthTriplet,
-                             Note::Pitch::E3 | Note::Duration::EighthTriplet,
-                             Note::Pitch::G3 | Note::Duration::EighthTriplet},
-                            {}, {}, {});
+TEST_F(TestWithFakeRom, Triplets) {
+  Pattern pattern =
+      Pattern(0x18,
+              {{Pitch::from_midi(Pitch::C3), Note::Duration::EighthTriplet},
+               {Pitch::from_midi(Pitch::E3), Note::Duration::EighthTriplet},
+               {Pitch::from_midi(Pitch::G3), Note::Duration::EighthTriplet}},
+              {}, {}, {});
 
   // FIXME this is what data is generated but it's incorrect.
   EXPECT_DATA_EQ(pattern, {0x18, 0x34, 0x12, 0x00, 0x00, 0x00},
                  {0x81, 0x85, 0x87, 0x00});
 }
 
-TEST(PatternTest, Parsing) {
+TEST_F(TestWithFakeRom, Parsing) {
   Pattern pattern{
       0x18,
       z2music::Pattern::parse_notes(
@@ -54,10 +93,10 @@ TEST(PatternTest, Parsing) {
       z2music::Pattern::parse_notes("r.4 a3 g#3.2 a3.6 r.4 a3 g#3.2 a3.6 r.4 "
                                     "a3 g#3.2 a3.6 c4.4 b3 a3 g#3.2 a3",
                                     2),
-      z2music::Pattern::parse_notes(
-          "a4.2 a4 a4 a4 a4 a4 a4 a4 f4 f4 f4 f4 f4 f4 f4 f4 g4 g4 g4 g4 g4 g4 "
-          "g4 g4 e4 e4 e4 e4 e4 e4 e4 e4",
-          2),
+      z2music::Pattern::parse_notes("a4.2 a4 a4 a4 a4 a4 a4 a4 f4 f4 f4 f4 "
+                                    "f4 f4 f4 f4 g4 g4 g4 g4 g4 g4 "
+                                    "g4 g4 e4 e4 e4 e4 e4 e4 e4 e4",
+                                    2),
       z2music::Pattern::parse_notes(
           "x.4 x.2 x.6 x.4 x x.2 x.6 x.4 x x.2 x.6 x.4 x x.2 x.4 x.2 x.4"),
   };
@@ -77,13 +116,16 @@ TEST(PatternTest, Parsing) {
 
 TEST(PatternTest, RoundTrip) {
   const std::string input_pw1 =
-      "F4.8 r.t2 r F4 F4 F4 F4 F4 r D#4 F4.4 r.t2 r F4 F4 F4 F4 F4 r D#4 F4.4 "
+      "F4.8 r.t2 r F4 F4 F4 F4 F4 r D#4 F4.4 r.t2 r F4 F4 F4 F4 F4 r D#4 "
+      "F4.4 "
       "r.t2 r F4 F4 F4 F4 F4.2 C4.1 C4 C4.2 C4.1 C4 C4.2 C4.1 C4 C4.2 C4";
   const std::string input_pw2 =
-      "A3.8 r.t2 r A3 A3 A3 A3 G3 r G3 G3.4 r G3.t2 G3 G3 G#3 r G#3 G#3.4 r.t2 "
+      "A3.8 r.t2 r A3 A3 A3 A3 G3 r G3 G3.4 r G3.t2 G3 G3 G#3 r G#3 G#3.4 "
+      "r.t2 "
       "r G#3 G#3 G#3 G#3 G#3.2 E3.1 E3 E3.2 E3.1 E3 E3.2 E3.1 E3 E3.2 E3";
   const std::string input_triangle =
-      "F4.4 F4.t2 F4 F4 F4.4 F4.t2 F4 F4 D#4.4 D#4.t2 D#4 D#4 D#4.4 D#4.t2 D#4 "
+      "F4.4 F4.t2 F4 F4 F4.4 F4.t2 F4 F4 D#4.4 D#4.t2 D#4 D#4 D#4.4 D#4.t2 "
+      "D#4 "
       "D#4 C#4.4 C#4.t2 C#4 C#4 C#4.4 C#4.t2 C#4 C#4 C4.4 C4 C4 D4.2 E4";
   const std::string input_noise =
       "G#3.4 G#3 G#3 G#3 G#3 G#3 G#3 G#3 G#3 G#3 G#3 G#3 G#3 G#3 G#3 G#3";

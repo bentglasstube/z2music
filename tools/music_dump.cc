@@ -7,6 +7,7 @@
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
 #include "absl/flags/usage.h"
+#include "absl/log/log.h"
 #include "rom.h"
 #include "util.h"
 
@@ -14,17 +15,10 @@ ABSL_FLAG(std::string, rom, "", "Path to the rom file to dump.");
 ABSL_FLAG(std::optional<std::string>, song, std::nullopt,
           "Dump only the listed song.");
 
-const z2music::Song* get_song_by_name(const z2music::Rom& rom,
-                                      const std::string& name) {
-  auto song = rom.song(name);
-  if (!song) LOG(FATAL) << "Unknown song name " << name;
-  return song;
-}
-
-void dump_song(const std::string& title, const z2music::Song* song) {
+void dump_song(const std::string& title, const z2music::Song& song) {
   std::cout << "song " << title << std::endl;
 
-  for (const auto& pattern : song->patterns()) {
+  for (const auto& pattern : song.patterns()) {
     if (pattern.voiced()) {
       std::cout << "pattern " << pattern.voice1() << " " << pattern.voice2()
                 << std::endl;
@@ -42,9 +36,9 @@ void dump_song(const std::string& title, const z2music::Song* song) {
               << std::endl;
   }
 
-  if (!song->empty()) {
+  if (!song.empty()) {
     std::cout << "sequence";
-    for (size_t n : song->sequence()) {
+    for (size_t n : song.sequence()) {
       std::cout << " " << (n + 1);
     }
     std::cout << std::endl << std::endl;
@@ -62,8 +56,12 @@ int main(int argc, char** argv) {
   const z2music::Rom rom(absl::GetFlag(FLAGS_rom));
 
   if (absl::GetFlag(FLAGS_song).has_value()) {
-    const std::string title = absl::GetFlag(FLAGS_song).value();
-    const z2music::Song* song = get_song_by_name(rom, title);
+    const auto title = absl::GetFlag(FLAGS_song).value();
+    const auto song_title = z2music::Rom::title_by_name(title);
+    if (song_title == z2music::Rom::SongTitle::Unknown) {
+      LOG(FATAL) << "Unknown song title: " << title;
+    }
+    const z2music::Song song = rom.song(song_title);
     dump_song(title, song);
   } else {
     dump_song("TitleIntro", rom.song(z2music::Rom::SongTitle::TitleIntro));

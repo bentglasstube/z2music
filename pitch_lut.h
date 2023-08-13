@@ -21,6 +21,11 @@ class PitchLUT {
   bool has_pitch(const Pitch& pitch) const;
   byte add_pitch(const Pitch& pitch);
 
+  static byte mask(byte b) { return b & 0b00111110; }
+
+  const Pitch* begin() const { return &table_[0]; }
+  const Pitch* end() const { return &table_[table_.size()]; }
+
  private:
   std::vector<Pitch> table_;
 };

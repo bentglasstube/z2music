@@ -29,13 +29,13 @@ cc_binary(
   name = "modder",
   srcs = ["modder.cc"],
   deps = [
-    "//:rom",
-    "//:util",
     "@absl//absl/flags:flag",
     "@absl//absl/flags:parse",
     "@absl//absl/flags:usage",
-    "@absl//absl/log:log",
     "@absl//absl/log:flags",
+    "@absl//absl/log:log",
+    "//:rom",
+    "//:util",
   ],
   linkopts = select({
     "//:windows": [
@@ -55,11 +55,13 @@ cc_binary(
   name = "music_dump",
   srcs = ["music_dump.cc"],
   deps = [
-    "//:rom",
-    "//:util",
+    "@absl//absl/flags:flag",
     "@absl//absl/flags:parse",
     "@absl//absl/flags:usage",
     "@absl//absl/log:flags",
+    "@absl//absl/log:log",
+    "//:rom",
+    "//:util",
   ],
   linkopts = select({
     "//:windows": [
@@ -79,10 +81,13 @@ cc_binary(
   name = "pitch_dump",
   srcs = ["pitch_dump.cc"],
   deps = [
-    "//:rom",
+    "@absl//absl/flags:flag",
     "@absl//absl/flags:parse",
     "@absl//absl/flags:usage",
     "@absl//absl/log:flags",
+    "@absl//absl/log:log",
+    "//:pitch",
+    "//:rom",
   ],
   linkopts = select({
     "//:windows": [

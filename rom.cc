@@ -341,7 +341,7 @@ void Rom::commit(Address address, std::vector<Rom::SongTitle> songs) {
 
   for (auto s : songs) {
     for (auto p : songs_.at(s).patterns()) {
-      const std::vector<byte> note_data = p.note_data();
+      const std::vector<byte> note_data = encode_pattern(p);
       const std::vector<byte> meta_data = p.meta_data(note_address);
 
       const z2music::Address meta_address = address + pat_offset;
@@ -358,9 +358,7 @@ void Rom::commit(Address address, std::vector<Rom::SongTitle> songs) {
   }
 }
 
-namespace {
-
-Rom::SongTitle song_by_name(const std::string& name) {
+Rom::SongTitle Rom::title_by_name(const std::string& name) {
   if (name == "TitleIntro") return Rom::SongTitle::TitleIntro;
   if (name == "TitleThemeStart") return Rom::SongTitle::TitleThemeStart;
   if (name == "TitleThemeBuildup") return Rom::SongTitle::TitleThemeBuildup;
@@ -393,20 +391,6 @@ Rom::SongTitle song_by_name(const std::string& name) {
   if (name == "FinalBossTheme") return Rom::SongTitle::FinalBossTheme;
 
   return Rom::SongTitle::Unknown;
-}
-
-}  // namespace
-
-Song* Rom::song(const std::string& name) {
-  SongTitle title = song_by_name(name);
-  if (title == SongTitle::Unknown) return nullptr;
-  return song(title);
-}
-
-const Song* Rom::song(const std::string& name) const {
-  SongTitle title = song_by_name(name);
-  if (title == SongTitle::Unknown) return nullptr;
-  return song(title);
 }
 
 Address Rom::get_song_table_address(Address loader_address) const {
@@ -470,60 +454,33 @@ Pattern Rom::read_pattern(Address address) const {
 
   Address note_base = (header[2] << 8) + header[1] + 0x10000;
 
-  bool rewrite = pattern.tempo() & 0x08;
-  pattern.add_notes(Pattern::Channel::Pulse1, read_notes(note_base, rewrite));
+  pattern.add_notes(Pattern::Channel::Pulse1, read_notes(note_base));
   size_t max_length = pattern.length();
 
   if (header[3])
     pattern.add_notes(Pattern::Channel::Triangle,
-                      read_notes(note_base + header[3], rewrite, max_length));
+                      read_notes(note_base + header[3], max_length));
   if (header[4])
     pattern.add_notes(Pattern::Channel::Pulse2,
-                      read_notes(note_base + header[4], rewrite, max_length));
+                      read_notes(note_base + header[4], max_length));
   if (header[5])
     pattern.add_notes(Pattern::Channel::Noise,
-                      read_notes(note_base + header[5], rewrite, max_length));
+                      read_notes(note_base + header[5], max_length));
 
   return pattern;
 }
 
-std::vector<Note> Rom::read_notes(Address address, bool rewrite_triplets,
-                                  size_t max_length) const {
-  // const size_t max_length = ch == Channel::Pulse1 ? 64 * 96 : length();
+std::vector<Note> Rom::read_notes(Address address, size_t max_length) const {
   size_t length = 0;
   std::vector<Note> notes;
 
   while (max_length == 0 || length < max_length) {
-    Note n = Note(getc(address++));
-    // Note data can terminate early on 00 byte
-    if (n == 0x00) break;
-
+    const byte b = getc(address++);
+    // FIXME only Pulse1 and Noise channels can be null terminated
+    if (b == 0x00) break;
+    const Note n = decode_note(b);
     length += n.length();
-    notes.emplace_back(n);
-
-    // FIXME This is all wrong, the duration comes from a LUT which has a number
-    // of ticks for each duration value.  Triplets are encoded using two
-    // different indices in the LUT because the tick length they divide is even
-    // (and thus not divisble by three).  This whole thing needs to be reworked
-    // to use the duration LUT.
-    //
-    // The QuarterTriplet duration has special meaning when preceeded by
-    // two EighthTriplets, which differs based on a tempo flag.
-    if (n.duration() == Note::Duration::QuarterTriplet) {
-      const size_t i = notes.size() - 3;
-      if (notes[i + 0].duration() == Note::Duration::EighthTriplet &&
-          notes[i + 1].duration() == Note::Duration::EighthTriplet) {
-        if (rewrite_triplets) {
-          // If flag 0x08 is set, just count 0xc1 as a third EighthTriplet
-          notes[i + 2].duration(Note::Duration::EighthTriplet);
-        } else {
-          // If flag 0x08 is not set, rewrite the whole sequence
-          notes[i + 0].duration(Note::Duration::DottedEighth);
-          notes[i + 1].duration(Note::Duration::DottedEighth);
-          notes[i + 2].duration(Note::Duration::Eighth);
-        }
-      }
-    }
+    notes.emplace_back(std::move(n));
   }
 
   return notes;
@@ -544,6 +501,11 @@ Credits Rom::read_credits(Address address) const {
   }
 
   return credits;
+}
+
+Note Rom::decode_note(byte b) const {
+  return {pitch_lut_[PitchLUT::mask(b)],
+          static_cast<Note::Duration>(b & 0b11000001)};
 }
 
 void Rom::commit_pitch_lut(Address address) {
@@ -582,6 +544,41 @@ void Rom::commit_credits(Address address) {
     putc(data++, 0xff);
     table += 4;
   }
+}
+
+std::vector<byte> Rom::encode_pattern(const Pattern& pattern) const {
+  std::vector<byte> data;
+  data.reserve(pattern.note_data_length());
+
+  const std::array<Pattern::Channel, 4> channels = {
+      Pattern::Channel::Pulse1,
+      Pattern::Channel::Pulse2,
+      Pattern::Channel::Triangle,
+      Pattern::Channel::Noise,
+  };
+
+  for (auto ch : channels) {
+    auto c = encode_note_data(pattern.notes(ch), pattern.pad_note_data(ch));
+    data.insert(data.end(), c.begin(), c.end());
+  }
+
+  return data;
+}
+
+std::vector<byte> Rom::encode_note_data(const std::vector<Note>& notes,
+                                        bool null_terminated) const {
+  std::vector<byte> data;
+  data.reserve(notes.size() + null_terminated ? 1 : 0);
+  for (const auto n : notes) {
+    data.push_back(encode_note(n));
+  }
+  if (null_terminated) data.push_back(0x00);
+  return data;
+}
+
+byte Rom::encode_note(const Note& note) const {
+  return pitch_lut_.index_for(note.pitch()) |
+         static_cast<uint8_t>(note.duration());
 }
 
 }  // namespace z2music

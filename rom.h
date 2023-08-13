@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "credits.h"
+#include "pattern.h"
 #include "pitch.h"
 #include "pitch_lut.h"
 #include "song.h"
@@ -55,6 +56,7 @@ class Rom {
   static constexpr Address kPalaceLoader = 0x019c0e;
   static constexpr Address kGreatPalaceLoader = 0x019c4b;
 
+  Rom() {}
   Rom(const std::string& filename);
 
   byte getc(Address address) const;
@@ -75,12 +77,12 @@ class Rom {
   void save(const std::string& filename);
   void move_song_table(Address loader_address, Address base_address);
 
-  Song* song(const std::string& name);
-  const Song* song(const std::string& name) const;
-  Song* song(SongTitle title) { return &songs_[title]; }
-  const Song* song(SongTitle title) const { return &songs_.at(title); }
+  Song& song(SongTitle title) { return songs_[title]; }
+  const Song& song(SongTitle title) const { return songs_.at(title); }
   Credits& credits() { return credits_; }
   PitchLUT& pitch_lut() { return pitch_lut_; }
+
+  static SongTitle title_by_name(const std::string& name);
 
  private:
   static constexpr size_t kHeaderSize = 0x10;
@@ -110,13 +112,22 @@ class Rom {
 
   Song read_song(Address address, byte entry) const;
   Pattern read_pattern(Address address) const;
-  std::vector<Note> read_notes(Address address, bool rewrite_triplets,
-                               size_t max_length = 0) const;
+  std::vector<Note> read_notes(Address address, size_t max_length = 0) const;
 
   Credits read_credits(Address address) const;
+  Note decode_note(byte b) const;
 
   void commit_pitch_lut(Address address);
   void commit_credits(Address address);
+
+  friend class TestWithFakeRom;
+
+  std::vector<byte> encode_pattern(const Pattern& pattern) const;
+
+  std::vector<byte> encode_note_data(const std::vector<Note>& notes,
+                                     bool null_terminated) const;
+
+  byte encode_note(const Note& note) const;
 };
 
 }  // namespace z2music
