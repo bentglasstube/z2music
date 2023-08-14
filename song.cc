@@ -57,4 +57,12 @@ const Pattern* Song::at(byte i) const {
   return &(patterns_.at(sequence_.at(i)));
 }
 
+PitchSet Song::pitches_used() const {
+  PitchSet pitches;
+  for (const auto& p : patterns_) {
+    pitches.merge(p.pitches_used());
+  }
+  return pitches;
+}
+
 }  // namespace z2music

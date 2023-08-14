@@ -258,4 +258,16 @@ std::string Pattern::dump_notes(Channel ch) const {
   return output.str();
 }
 
+PitchSet Pattern::pitches_used() const {
+  PitchSet pitches;
+
+  for (const auto& v : notes_) {
+    for (const auto& n : v.second) {
+      pitches.insert(n.pitch());
+    }
+  }
+
+  return pitches;
+}
+
 }  // namespace z2music

@@ -191,6 +191,8 @@ bool Rom::commit() {
           SongTitle::FinalBossTheme});
 
   commit_credits(kCreditsTableAddress);
+
+  rebuild_pitch_lut();
   commit_pitch_lut(kPitchLUTAddress);
 
   return true;
@@ -506,6 +508,27 @@ Credits Rom::read_credits(Address address) const {
 Note Rom::decode_note(byte b) const {
   return {pitch_lut_[PitchLUT::mask(b)],
           static_cast<Note::Duration>(b & 0b11000001)};
+}
+
+void Rom::rebuild_pitch_lut() {
+  // pitch_lut_.clear();
+  LOG(INFO) << "Rebuilding pitch LUT";
+
+  PitchSet pitches;
+  for (const auto& song : songs_) {
+    pitches.merge(song.second.pitches_used());
+  }
+
+  if (pitches.size() > 31) {
+    LOG(FATAL) << "There are " << pitches.size()
+               << " unique pitches, which is more than the maximum of 31.";
+  }
+
+  byte i = 0;
+  for (auto const& p : pitches) {
+    pitch_lut_[i++] = p;
+    if (i == 1) ++i;  // don't overwrite entry 2 (rest)
+  }
 }
 
 void Rom::commit_pitch_lut(Address address) {

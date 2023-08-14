@@ -117,6 +117,8 @@ class Rom {
   Credits read_credits(Address address) const;
   Note decode_note(byte b) const;
 
+  void rebuild_pitch_lut();
+
   void commit_pitch_lut(Address address);
   void commit_credits(Address address);
 

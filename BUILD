@@ -35,6 +35,7 @@ cc_library(
   deps = [
     "@absl//absl/log:log",
     ":note",
+    ":pitch",
     ":util",
   ],
 )
@@ -79,6 +80,7 @@ cc_library(
   srcs = ["song.cc"],
   deps = [
     ":pattern",
+    ":pitch",
     ":util",
   ],
 )

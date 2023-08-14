@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "pattern.h"
+#include "pitch.h"
 #include "util.h"
 
 namespace z2music {
@@ -32,6 +33,8 @@ class Song {
   const Pattern* at(byte i) const;
 
   const std::vector<byte> sequence() const { return sequence_; }
+
+  PitchSet pitches_used() const;
 
  private:
   std::vector<Pattern> patterns_;

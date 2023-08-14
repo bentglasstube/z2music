@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "note.h"
+#include "pitch.h"
 #include "util.h"
 
 namespace z2music {
@@ -49,6 +50,8 @@ class Pattern {
   bool pad_note_data(Channel ch) const;
   size_t note_data_length() const;
   size_t note_data_length(Channel ch) const;
+
+  PitchSet pitches_used() const;
 
  private:
   byte tempo_, voice1_, voice2_;

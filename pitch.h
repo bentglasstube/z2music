@@ -4,6 +4,7 @@
 #include <array>
 #include <cmath>
 #include <map>
+#include <set>
 #include <string>
 
 #include "util.h"
@@ -71,6 +72,8 @@ class Pitch {
 };
 
 std::ostream& operator<<(std::ostream& os, Pitch p);
+
+typedef std::set<Pitch> PitchSet;
 
 }  // namespace z2music
 
