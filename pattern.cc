@@ -263,6 +263,7 @@ PitchSet Pattern::pitches_used() const {
 
   for (const auto& v : notes_) {
     for (const auto& n : v.second) {
+      LOG(INFO) << "Found note " << n;
       pitches.insert(n.pitch());
     }
   }

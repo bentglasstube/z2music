@@ -511,7 +511,6 @@ Note Rom::decode_note(byte b) const {
 }
 
 void Rom::rebuild_pitch_lut() {
-  // pitch_lut_.clear();
   LOG(INFO) << "Rebuilding pitch LUT";
 
   PitchSet pitches;
@@ -519,21 +518,26 @@ void Rom::rebuild_pitch_lut() {
     pitches.merge(song.second.pitches_used());
   }
 
-  if (pitches.size() > 31) {
-    LOG(FATAL) << "There are " << pitches.size()
-               << " unique pitches, which is more than the maximum of 31.";
+  LOG(INFO) << "Found " << pitches.size() << " unique pitches used.";
+  if (pitches.size() > 30) {
+    LOG(FATAL) << "There are only slots for 30 unique pitches.";
   }
 
-  byte i = 0;
+  LOG(INFO) << "Saving rests in first two slots.";
+
+  pitch_lut_.clear();
+  pitch_lut_.add_pitch(Pitch::none());
+  pitch_lut_.add_pitch(Pitch::none());
+
   for (auto const& p : pitches) {
-    pitch_lut_[i++] = p;
-    if (i == 1) ++i;  // don't overwrite entry 2 (rest)
+    byte i = pitch_lut_.add_pitch(p);
+    LOG(INFO) << "Saving pitch " << p << " at index " << i;
   }
 }
 
 void Rom::commit_pitch_lut(Address address) {
-  for (byte i = 0; i < 0x7a; i += byte(2)) {
-    putwr(address + i, pitch_lut_.at(i).timer());
+  for (byte i = 0; i < pitch_lut_.size(); ++i) {
+    putwr(address + (i * 2), pitch_lut_.at(i * 2).timer());
   }
 }
 

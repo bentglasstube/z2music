@@ -122,14 +122,15 @@ class Rom {
   void commit_pitch_lut(Address address);
   void commit_credits(Address address);
 
-  friend class TestWithFakeRom;
-
   std::vector<byte> encode_pattern(const Pattern& pattern) const;
 
   std::vector<byte> encode_note_data(const std::vector<Note>& notes,
                                      bool null_terminated) const;
 
   byte encode_note(const Note& note) const;
+
+  friend class TestWithFakeRom;
+  friend class RomTest_AutomaticPitchLUT_Test;
 };
 
 }  // namespace z2music

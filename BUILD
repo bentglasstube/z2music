@@ -115,6 +115,17 @@ cc_test(
   size = 'small',
 )
 
+cc_test(
+  name = "rom_test",
+  srcs = ["rom_test.cc"],
+  deps = [
+    "@googletest//:gtest_main",
+    ":pitch",
+    ":rom",
+  ],
+  size = 'small',
+)
+
 pkg_win(
   name = "release",
   srcs = [
