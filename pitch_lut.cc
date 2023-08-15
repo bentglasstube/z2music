@@ -12,14 +12,8 @@ byte PitchLUT::index_for(const Pitch& pitch) const {
   for (size_t i = 0; i < table_.size(); ++i) {
     if (table_[i] == pitch) return i * 2;
   }
+  LOG(ERROR) << "Unable to find pitch " << pitch << " in LUT";
   return 0;
-}
-
-bool PitchLUT::has_pitch(const Pitch& pitch) const {
-  for (size_t i = 0; i < table_.size(); ++i) {
-    if (table_[i] == pitch) return true;
-  }
-  return false;
 }
 
 byte PitchLUT::add_pitch(const Pitch& pitch) {

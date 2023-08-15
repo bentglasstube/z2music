@@ -1,0 +1,28 @@
+Sound effect pitch LUT references
+
+$92ca   Item drop         p1  0x52
+$92db                     p1  0x4e
+$935f   Enemy killed      p1  EnemyKilledPitch
+$936e   Sword beam        p1  0x54
+$9372                     p1  0x62
+$93f4   Link fall         p2  0x58
+$9400                     p2  0x22
+$94f9   Open menu         p2  0x22
+$9505                     p2  0x28
+$950d                     p2  0x32
+$9537   Tink              p2  0x3c
+$955d   Swamp walk        p2  0x04
+$9561                     p2  0x10
+$9579   Crumble bridge    tr  0x0a
+$97f7   Raft ditty        p1  DittyRaftNote
+$98e3   Sword block       p1  SwordBlockNote
+$9a37   Flute ditty       p1  DittyFluteNote
+$9a5f                     p1  DittyFlute2Note
+$9a87                     p1  DittyFlute3Note
+
+EnemyKilledPitch  $90fe 6
+DittyRaftNote     $963f 5
+DittyFluteNote    $964b 7
+DittyFlute2Note   $9658 6
+DittyFlute3Note   $9667 9
+SwordBlockNote    $96b6 31

@@ -1,5 +1,5 @@
-#ifndef Z2MUSIC_SONG
-#define Z2MUSIC_SONG
+#ifndef Z2MUSIC_SONG_H_
+#define Z2MUSIC_SONG_H_
 
 #include <vector>
 
@@ -25,6 +25,7 @@ class Song {
 
   void clear();
   bool empty() const { return patterns_.empty(); }
+  bool title() const { return empty() || patterns_[0].voiced(); }
 
   std::vector<Pattern> patterns() { return patterns_; }
   const std::vector<Pattern> patterns() const { return patterns_; }
@@ -43,4 +44,4 @@ class Song {
 
 }  // namespace z2music
 
-#endif  // define Z2MUSIC_SONG
+#endif  // Z2MUSIC_SONG_H_

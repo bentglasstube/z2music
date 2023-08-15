@@ -1,5 +1,5 @@
-#ifndef Z2MUSIC_PATTERN
-#define Z2MUSIC_PATTERN
+#ifndef Z2MUSIC_PATTERN_H_
+#define Z2MUSIC_PATTERN_H_
 
 #include <string>
 #include <unordered_map>
@@ -62,4 +62,4 @@ class Pattern {
 
 }  // namespace z2music
 
-#endif  // define Z2MUSIC_PATTERN
+#endif  // Z2MUSIC_PATTERN_H_

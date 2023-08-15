@@ -22,12 +22,11 @@ TEST(RomTest, AutomaticPitchLUT) {
   rom.rebuild_pitch_lut();
   auto& lut = rom.pitch_lut();
 
-  EXPECT_EQ(lut.size(), 5);
-  EXPECT_EQ(lut[0x00], Pitch::none());
+  EXPECT_EQ(lut.size(), 4);
+  EXPECT_EQ(lut[0x00], Pitch(Pitch::A4));
   EXPECT_EQ(lut[0x02], Pitch::none());
-  EXPECT_EQ(lut[0x04], Pitch(Pitch::A4));
-  EXPECT_EQ(lut[0x06], Pitch(Pitch::C5));
-  EXPECT_EQ(lut[0x08], Pitch(Pitch::E5));
+  EXPECT_EQ(lut[0x04], Pitch(Pitch::C5));
+  EXPECT_EQ(lut[0x06], Pitch(Pitch::E5));
 }
 
 }  // namespace z2music

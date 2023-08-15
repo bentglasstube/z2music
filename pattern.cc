@@ -90,7 +90,7 @@ std::vector<byte> Pattern::meta_data(Address pw1_address) const {
 size_t Pattern::length(Pattern::Channel ch) const {
   size_t length = 0;
   for (auto n : notes_.at(ch)) {
-    length += n.length();
+    length += n.ticks();
   }
   return length;
 }
@@ -241,18 +241,16 @@ std::vector<Note> Pattern::parse_notes(const std::string& data, int transpose) {
 }
 
 std::string Pattern::dump_notes(Channel ch) const {
-  Note::Duration prev_dur = Note::Duration::Unknown;
+  int prev = -1;
 
   std::ostringstream output;
   for (const auto note : notes(ch)) {
-    auto duration = note.duration();
-
     if (output.tellp() > 0) output << " ";
     output << note.pitch();
 
-    if (duration != prev_dur) {
+    if (note.ticks() != prev) {
       output << "." << note.duration_string();
-      prev_dur = duration;
+      prev = note.ticks();
     }
   }
   return output.str();
@@ -263,7 +261,6 @@ PitchSet Pattern::pitches_used() const {
 
   for (const auto& v : notes_) {
     for (const auto& n : v.second) {
-      LOG(INFO) << "Found note " << n;
       pitches.insert(n.pitch());
     }
   }

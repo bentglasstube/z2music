@@ -1,5 +1,5 @@
-#ifndef Z2MUSIC_UTIL
-#define Z2MUSIC_UTIL
+#ifndef Z2MUSIC_UTIL_H_
+#define Z2MUSIC_UTIL_H_
 
 #include <cstdint>
 #include <iostream>
@@ -40,4 +40,4 @@ struct std::hash<z2music::StrongInt<T, Name>> {
   }
 };
 
-#endif  // define Z2MUSIC_UTIL
+#endif  // Z2MUSIC_UTIL_H_

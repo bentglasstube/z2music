@@ -1,5 +1,6 @@
 #include "pitch.h"
 
+#include "absl/log/log.h"
 #include "gtest/gtest.h"
 
 #define EXPECT_ERROR(a, b, err) EXPECT_NEAR((a), (b), ((err) * (b)))
@@ -33,6 +34,8 @@ TEST(PitchTest, Comparisons) {
 
   Pitch b4 = Pitch(Pitch::B4);
   EXPECT_GT(b4, a4);
+  LOG(INFO) << b4 << ": midi " << b4.midi();
+  LOG(INFO) << a4 << ": midi " << a4.midi();
 
   Pitch cs3 = Pitch(Pitch::Cs3);
   Pitch db3 = Pitch(Pitch::Db3);

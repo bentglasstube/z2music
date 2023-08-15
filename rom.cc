@@ -19,6 +19,12 @@ Rom::Rom(const std::string& filename) {
     palace_song_table = get_song_table_address(kPalaceLoader);
     great_palace_song_table = get_song_table_address(kGreatPalaceLoader);
 
+    credits_ = read_credits(kCreditsTableAddress);
+    pitch_lut_ = read_pitch_lut(kPitchLUTAddress, kPitchLUTLimit);
+    title_pitch_lut_ =
+        read_pitch_lut(kTitlePitchLUTAddress, kTitlePitchLUTLimit);
+    duration_lut_ = read_duration_lut(kDurationLUTAddress);
+
     songs_[SongTitle::TitleIntro] = read_song(title_screen_table, 0);
     songs_[SongTitle::TitleThemeStart] = read_song(title_screen_table, 1);
     songs_[SongTitle::TitleThemeBuildup] = read_song(title_screen_table, 2);
@@ -49,9 +55,6 @@ Rom::Rom(const std::string& filename) {
         read_song(great_palace_song_table, 4);
     songs_[SongTitle::TriforceFanfare] = read_song(great_palace_song_table, 5);
     songs_[SongTitle::FinalBossTheme] = read_song(great_palace_song_table, 6);
-
-    credits_ = read_credits(kCreditsTableAddress);
-    pitch_lut_ = read_pitch_lut(kPitchLUTAddress);
   }
 }
 
@@ -167,7 +170,9 @@ Address Rom::write_string(Address address, const std::string& s) {
   return address + length + 1;
 }
 
-bool Rom::commit() {
+void Rom::commit() {
+  rebuild_pitch_lut();
+
   commit(title_screen_table,
          {SongTitle::TitleIntro, SongTitle::TitleThemeStart,
           SongTitle::TitleThemeBuildup, SongTitle::TitleThemeMain,
@@ -191,20 +196,15 @@ bool Rom::commit() {
           SongTitle::FinalBossTheme});
 
   commit_credits(kCreditsTableAddress);
-
-  rebuild_pitch_lut();
   commit_pitch_lut(kPitchLUTAddress);
-
-  return true;
 }
 
 void Rom::save(const std::string& filename) {
-  if (commit()) {
-    std::ofstream file(filename, std::ios::binary);
-    if (file.is_open()) {
-      file.write(reinterpret_cast<char*>(&header_[0]), kHeaderSize);
-      file.write(reinterpret_cast<char*>(&data_[0]), kRomSize);
-    }
+  commit();
+  std::ofstream file(filename, std::ios::binary);
+  if (file.is_open()) {
+    file.write(reinterpret_cast<char*>(&header_[0]), kHeaderSize);
+    file.write(reinterpret_cast<char*>(&data_[0]), kRomSize);
   }
 }
 
@@ -408,15 +408,35 @@ Address Rom::get_song_table_address(Address loader_address) const {
   return addr;
 }
 
-PitchLUT Rom::read_pitch_lut(Address address) const {
+PitchLUT Rom::read_pitch_lut(Address address, size_t entries) const {
   PitchLUT lut;
   LOG(INFO) << "Reading pitch data from " << address;
-  for (byte i = 0; i < 0x7a; i += byte(2)) {
-    const Pitch pitch{getwr(address + i)};
+  for (size_t i = 0; i < entries; ++i) {
+    const Pitch pitch{getwr(address + i * 2)};
     lut.add_pitch(pitch);
-    LOG(INFO) << "Value at offset " << i << ": " << pitch;
+    LOG(INFO) << "Value at offset " << (i * 2) << ": " << pitch;
   }
   return lut;
+}
+
+DurationLUT Rom::read_duration_lut(Address address) const {
+  DurationLUT lut;
+  lut.add_row(read_duration_lut_row(address, 8));
+  lut.add_row(read_duration_lut_row(address + 8, 8));
+  lut.add_row(read_duration_lut_row(address + 16, 8));
+  lut.add_row(read_duration_lut_row(address + 24, 8));
+  lut.add_row(read_duration_lut_row(address + 32, 8));
+  lut.add_row(read_duration_lut_row(address + 40, 6));
+  return lut;
+}
+
+DurationLUT::Row Rom::read_duration_lut_row(Address address,
+                                            size_t entries) const {
+  DurationLUT::Row row(getc(address));
+  for (size_t i = 1; i < entries; ++i) {
+    row.add_value(getc(address + i));
+  }
+  return row;
 }
 
 Song Rom::read_song(Address address, byte entry) const {
@@ -481,7 +501,7 @@ std::vector<Note> Rom::read_notes(Address address, size_t max_length) const {
     // FIXME only Pulse1 and Noise channels can be null terminated
     if (b == 0x00) break;
     const Note n = decode_note(b);
-    length += n.length();
+    length += n.ticks();
     notes.emplace_back(std::move(n));
   }
 
@@ -506,27 +526,38 @@ Credits Rom::read_credits(Address address) const {
 }
 
 Note Rom::decode_note(byte b) const {
-  return {pitch_lut_[PitchLUT::mask(b)],
-          static_cast<Note::Duration>(b & 0b11000001)};
+  auto pitch = pitch_lut_[PitchLUT::mask(b)];
+  // FIXME look up duration in LUT
+  auto ticks = Note::Duration::Quarter;
+  return {pitch, ticks};
 }
 
 void Rom::rebuild_pitch_lut() {
   LOG(INFO) << "Rebuilding pitch LUT";
 
   PitchSet pitches;
-  for (const auto& song : songs_) {
-    pitches.merge(song.second.pitches_used());
+
+  for (const auto& it : songs_) {
+    const auto& song = it.second;
+    if (!song.title()) {
+      pitches.merge(song.pitches_used());
+    }
   }
 
   LOG(INFO) << "Found " << pitches.size() << " unique pitches used.";
-  if (pitches.size() > 30) {
-    LOG(FATAL) << "There are only slots for 30 unique pitches.";
+  if (pitches.size() >= kPitchLUTLimit) {
+    LOG(FATAL) << "There are only slots for " << (kPitchLUTLimit - 1)
+               << " unique pitches.";
   }
 
-  LOG(INFO) << "Saving rests in first two slots.";
-
   pitch_lut_.clear();
-  pitch_lut_.add_pitch(Pitch::none());
+
+  // FIXME check that this note isn't used improperly
+  auto first = pitches.begin();
+  pitch_lut_.add_pitch(*first);
+  pitches.erase(first);
+
+  // add rest in slot 2
   pitch_lut_.add_pitch(Pitch::none());
 
   for (auto const& p : pitches) {
@@ -573,7 +604,7 @@ void Rom::commit_credits(Address address) {
   }
 }
 
-std::vector<byte> Rom::encode_pattern(const Pattern& pattern) const {
+std::vector<byte> Rom::encode_pattern(const Pattern& pattern) {
   std::vector<byte> data;
   data.reserve(pattern.note_data_length());
 
@@ -585,7 +616,8 @@ std::vector<byte> Rom::encode_pattern(const Pattern& pattern) const {
   };
 
   for (auto ch : channels) {
-    auto c = encode_note_data(pattern.notes(ch), pattern.pad_note_data(ch));
+    auto c = encode_note_data(pattern.notes(ch), pattern.tempo(),
+                              pattern.pad_note_data(ch), pattern.voiced());
     data.insert(data.end(), c.begin(), c.end());
   }
 
@@ -593,19 +625,32 @@ std::vector<byte> Rom::encode_pattern(const Pattern& pattern) const {
 }
 
 std::vector<byte> Rom::encode_note_data(const std::vector<Note>& notes,
-                                        bool null_terminated) const {
+                                        byte offset, bool null_terminated,
+                                        bool title) {
+  LOG(INFO) << "Encoding " << (title ? "title " : "") << "note data";
+
   std::vector<byte> data;
   data.reserve(notes.size() + null_terminated ? 1 : 0);
+
+  int prev = -1;
+  duration_lut_.reset_error();
+
   for (const auto n : notes) {
-    data.push_back(encode_note(n));
+    if (title) {
+      if (n.ticks() != prev) {
+        prev = n.ticks();
+        data.push_back(title_duration_lut_.encode(n.ticks(), offset) | 0x80);
+      }
+      data.push_back(title_pitch_lut_.index_for(n.pitch()));
+    } else {
+      byte p = pitch_lut_.index_for(n.pitch());
+      byte d = duration_lut_.encode(n.ticks(), offset);
+      data.push_back(p | ((d & 0b11) << 6) | ((d & 0b100) >> 2));
+    }
   }
+
   if (null_terminated) data.push_back(0x00);
   return data;
-}
-
-byte Rom::encode_note(const Note& note) const {
-  return pitch_lut_.index_for(note.pitch()) |
-         static_cast<uint8_t>(note.duration());
 }
 
 }  // namespace z2music

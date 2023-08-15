@@ -1,11 +1,12 @@
-#ifndef Z2MUSIC_ROM
-#define Z2MUSIC_ROM
+#ifndef Z2MUSIC_ROM_H_
+#define Z2MUSIC_ROM_H_
 
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 #include "credits.h"
+#include "duration_lut.h"
 #include "pattern.h"
 #include "pitch.h"
 #include "pitch_lut.h"
@@ -73,7 +74,7 @@ class Rom {
   std::string read_string(Address address) const;
   Address write_string(Address address, const std::string& s);
 
-  bool commit();
+  void commit();
   void save(const std::string& filename);
   void move_song_table(Address loader_address, Address base_address);
 
@@ -81,6 +82,9 @@ class Rom {
   const Song& song(SongTitle title) const { return songs_.at(title); }
   Credits& credits() { return credits_; }
   PitchLUT& pitch_lut() { return pitch_lut_; }
+  PitchLUT& title_pitch_lut() { return title_pitch_lut_; }
+  DurationLUT& duration_lut() { return duration_lut_; }
+  DurationLUT& title_duration_lut() { return title_duration_lut_; }
 
   static SongTitle title_by_name(const std::string& name);
 
@@ -88,9 +92,15 @@ class Rom {
   static constexpr size_t kHeaderSize = 0x10;
   static constexpr size_t kRomSize = 0x040000;
   static constexpr size_t kPitchLUTAddress = 0x01918f;
+  static constexpr size_t kTitlePitchLUTAddress = 0x01808f;
+  static constexpr size_t kDurationLUTAddress = 0x01914d;
+  static constexpr size_t kTitleDurationLUTAddress = 0x018084;
 
   static constexpr Address kCreditsTableAddress = 0x015259;
   static constexpr Address kCreditsBankOffset = 0xc000;
+
+  static constexpr size_t kPitchLUTLimit = 32;
+  static constexpr size_t kTitlePitchLUTLimit = 64;
 
   byte header_[kHeaderSize];
   byte data_[kRomSize];
@@ -103,12 +113,15 @@ class Rom {
 
   std::unordered_map<SongTitle, Song> songs_;
   Credits credits_;
-  PitchLUT pitch_lut_;
+  PitchLUT pitch_lut_, title_pitch_lut_;
+  DurationLUT duration_lut_, title_duration_lut_;
 
   void commit(Address address, std::vector<SongTitle> songs);
   Address get_song_table_address(Address loader_address) const;
 
-  PitchLUT read_pitch_lut(Address address) const;
+  PitchLUT read_pitch_lut(Address address, size_t entries) const;
+  DurationLUT read_duration_lut(Address address) const;
+  DurationLUT::Row read_duration_lut_row(Address address, size_t entries) const;
 
   Song read_song(Address address, byte entry) const;
   Pattern read_pattern(Address address) const;
@@ -122,12 +135,11 @@ class Rom {
   void commit_pitch_lut(Address address);
   void commit_credits(Address address);
 
-  std::vector<byte> encode_pattern(const Pattern& pattern) const;
+  std::vector<byte> encode_pattern(const Pattern& pattern);
 
   std::vector<byte> encode_note_data(const std::vector<Note>& notes,
-                                     bool null_terminated) const;
-
-  byte encode_note(const Note& note) const;
+                                     byte offset, bool null_terminated,
+                                     bool title);
 
   friend class TestWithFakeRom;
   friend class RomTest_AutomaticPitchLUT_Test;
@@ -135,4 +147,4 @@ class Rom {
 
 }  // namespace z2music
 
-#endif  // define Z2MUSIC_ROM
+#endif  // Z2MUSIC_ROM_H_

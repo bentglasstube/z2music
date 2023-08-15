@@ -1,5 +1,5 @@
-#ifndef Z2MUSIC_CREDITS
-#define Z2MUSIC_CREDITS
+#ifndef Z2MUSIC_CREDITS_H_
+#define Z2MUSIC_CREDITS_H_
 
 #include <array>
 #include <string>
@@ -34,4 +34,4 @@ class Credits {
 
 }  // namespace z2music
 
-#endif  // define Z2MUSIC_CREDITS
+#endif  // Z2MUSIC_CREDITS_H_

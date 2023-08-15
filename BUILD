@@ -18,6 +18,16 @@ cc_library(
 )
 
 cc_library(
+  name = "duration_lut",
+  hdrs = ["duration_lut.h"],
+  srcs = ["duration_lut.cc"],
+  deps = [
+    ":note",
+    ":util",
+  ],
+)
+
+cc_library(
   name = "note",
   hdrs = ["note.h"],
   srcs = ["note.cc"],
@@ -65,6 +75,7 @@ cc_library(
   deps = [
     "@absl//absl/log:log",
     ":credits",
+    ":duration_lut",
     ":note",
     ":pattern",
     ":pitch",
@@ -95,6 +106,7 @@ cc_test(
   name = "pitch_test",
   srcs = ["pitch_test.cc"],
   deps = [
+    "@absl//absl/log:log",
     "@googletest//:gtest_main",
     ":pitch",
   ],

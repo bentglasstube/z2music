@@ -1,5 +1,5 @@
-#ifndef Z2MUSIC_PITCH
-#define Z2MUSIC_PITCH
+#ifndef Z2MUSIC_PITCH_H_
+#define Z2MUSIC_PITCH_H_
 
 #include <array>
 #include <cmath>
@@ -46,11 +46,11 @@ class Pitch {
 
   std::string to_string() const;
 
-  bool operator==(Pitch other) const { return timer_ == other.timer_; }
-  bool operator<(Pitch other) const { return timer_ > other.timer_; }
-  bool operator>(Pitch other) const { return timer_ < other.timer_; }
-  bool operator<=(Pitch other) const { return timer_ >= other.timer_; }
-  bool operator>=(Pitch other) const { return timer_ <= other.timer_; }
+  bool operator==(Pitch other) const { return midi() == other.midi(); }
+  bool operator<(Pitch other) const { return midi() < other.midi(); }
+  bool operator>(Pitch other) const { return midi() > other.midi(); }
+  bool operator<=(Pitch other) const { return midi() <= other.midi(); }
+  bool operator>=(Pitch other) const { return midi() >= other.midi(); }
 
   WordBE timer() const { return timer_; }
   float freq() const { return kCPURate / (16.0f * (timer_ + 1)); }
@@ -77,4 +77,4 @@ typedef std::set<Pitch> PitchSet;
 
 }  // namespace z2music
 
-#endif  // define Z2MUSIC_PITCH
+#endif  // Z2MUSIC_PITCH_H_
