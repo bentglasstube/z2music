@@ -23,7 +23,8 @@ Rom::Rom(const std::string& filename) {
     pitch_lut_ = read_pitch_lut(kPitchLUTAddress, kPitchLUTLimit);
     title_pitch_lut_ =
         read_pitch_lut(kTitlePitchLUTAddress, kTitlePitchLUTLimit);
-    duration_lut_ = read_duration_lut(kDurationLUTAddress);
+    duration_lut_ = read_duration_lut(kDurationLUTAddress, 46);
+    title_duration_lut_ = read_duration_lut(kTitleDurationLUTAddress, 11);
 
     songs_[SongTitle::TitleIntro] = read_song(title_screen_table, 0);
     songs_[SongTitle::TitleThemeStart] = read_song(title_screen_table, 1);
@@ -419,14 +420,20 @@ PitchLUT Rom::read_pitch_lut(Address address, size_t entries) const {
   return lut;
 }
 
-DurationLUT Rom::read_duration_lut(Address address) const {
+DurationLUT Rom::read_duration_lut(Address address, size_t entries) const {
   DurationLUT lut;
-  lut.add_row(read_duration_lut_row(address, 8));
-  lut.add_row(read_duration_lut_row(address + 8, 8));
-  lut.add_row(read_duration_lut_row(address + 16, 8));
-  lut.add_row(read_duration_lut_row(address + 24, 8));
-  lut.add_row(read_duration_lut_row(address + 32, 8));
-  lut.add_row(read_duration_lut_row(address + 40, 6));
+  LOG(INFO) << "Reading duration data from " << address;
+
+  if (entries > 16) {
+    while (entries > 8) {
+      lut.add_row(read_duration_lut_row(address, 8));
+      entries -= 8;
+      address += 8;
+    }
+    if (entries > 0) lut.add_row(read_duration_lut_row(address, entries));
+  } else {
+    lut.add_row(read_duration_lut_row(address, entries));
+  }
   return lut;
 }
 
@@ -436,6 +443,7 @@ DurationLUT::Row Rom::read_duration_lut_row(Address address,
   for (size_t i = 1; i < entries; ++i) {
     row.add_value(getc(address + i));
   }
+  LOG(INFO) << "Durations: " << row;
   return row;
 }
 
@@ -631,23 +639,25 @@ std::vector<byte> Rom::encode_note_data(const std::vector<Note>& notes,
   data.reserve(notes.size() + null_terminated ? 1 : 0);
 
   int prev = -1;
-  duration_lut_.reset_error();
+  auto& lut = (title ? title_duration_lut_ : duration_lut_);
+  lut.reset();
 
   for (const auto n : notes) {
     if (title) {
       if (n.ticks() != prev) {
         prev = n.ticks();
-        data.push_back(title_duration_lut_.encode(n.ticks(), offset) | 0x80);
+        data.push_back(lut.encode(n.ticks(), offset) | 0x80);
       }
       data.push_back(title_pitch_lut_.index_for(n.pitch()));
     } else {
       byte p = pitch_lut_.index_for(n.pitch());
-      byte d = duration_lut_.encode(n.ticks(), offset);
+      byte d = lut.encode(n.ticks(), offset);
       data.push_back(p | ((d & 0b11) << 6) | ((d & 0b100) >> 2));
     }
   }
 
   if (null_terminated) data.push_back(0x00);
+
   return data;
 }
 

@@ -1,5 +1,7 @@
 #include "duration_lut.h"
 
+#include <sstream>
+
 #include "absl/log/log.h"
 
 namespace z2music {
@@ -7,6 +9,25 @@ namespace z2music {
 byte DurationLUT::encode(int ticks, byte offset) {
   Row* row = get_row(offset);
   return row ? row->encode(ticks) : byte{0};
+}
+
+void DurationLUT::reset() {
+  for (auto& row : rows_) row.reset();
+}
+
+bool DurationLUT::has_error() const {
+  for (const auto& row : rows_) {
+    if (row.error() > 0) return true;
+  }
+  return false;
+}
+
+float DurationLUT::error() const {
+  float error = 0;
+  for (const auto& row : rows_) {
+    error += row.error();
+  }
+  return error;
 }
 
 DurationLUT::Row* DurationLUT::get_row(byte offset) {
@@ -25,6 +46,11 @@ byte DurationLUT::Row::encode(int ticks) {
   float target = ticks * ratio() - error_;
   byte value = static_cast<byte>(std::round(target));
   error_ += (target - value);
+
+  LOG(INFO) << "Encoding duration " << ticks << " vs base " << base();
+  LOG(INFO) << "target = " << target << ", value = " << value;
+  LOG(INFO) << "error_ = " << error_;
+
   return index_for(value);
 }
 
@@ -36,8 +62,16 @@ byte DurationLUT::Row::index_for(int value) const {
   return 0;
 }
 
-void DurationLUT::reset_error() {
-  for (auto row : rows_) row.reset_error();
+std::string DurationLUT::Row::to_string() const {
+  std::ostringstream out;
+  for (auto v : values_) {
+    out << (out.tellp() > 0 ? " " : "") << v;
+  }
+  return out.str();
+}
+
+std::ostream& operator<<(std::ostream& os, const DurationLUT::Row& row) {
+  return os << row.to_string();
 }
 
 }  // namespace z2music

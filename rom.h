@@ -91,10 +91,10 @@ class Rom {
  private:
   static constexpr size_t kHeaderSize = 0x10;
   static constexpr size_t kRomSize = 0x040000;
-  static constexpr size_t kPitchLUTAddress = 0x01918f;
+  static constexpr size_t kTitleDurationLUTAddress = 0x018084;
   static constexpr size_t kTitlePitchLUTAddress = 0x01808f;
   static constexpr size_t kDurationLUTAddress = 0x01914d;
-  static constexpr size_t kTitleDurationLUTAddress = 0x018084;
+  static constexpr size_t kPitchLUTAddress = 0x01918f;
 
   static constexpr Address kCreditsTableAddress = 0x015259;
   static constexpr Address kCreditsBankOffset = 0xc000;
@@ -120,7 +120,7 @@ class Rom {
   Address get_song_table_address(Address loader_address) const;
 
   PitchLUT read_pitch_lut(Address address, size_t entries) const;
-  DurationLUT read_duration_lut(Address address) const;
+  DurationLUT read_duration_lut(Address address, size_t entries) const;
   DurationLUT::Row read_duration_lut_row(Address address, size_t entries) const;
 
   Song read_song(Address address, byte entry) const;

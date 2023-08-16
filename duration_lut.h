@@ -1,6 +1,8 @@
 #ifndef Z2MUSIC_DURATION_LUT_H_
 #define Z2MUSIC_DURATION_LUT_H_
 
+#include <iostream>
+#include <string>
 #include <vector>
 
 #include "note.h"
@@ -22,9 +24,11 @@ class DurationLUT {
     }
     byte index_for(int ticks) const;
     size_t size() const { return values_.size(); }
+    std::string to_string() const;
 
-    void reset_error() { error_ = 0.f; }
+    void reset() { error_ = 0.f; }
     void add_value(byte value) { values_.push_back(value); }
+    float error() const { return error_; }
 
    private:
     std::vector<byte> values_;
@@ -35,13 +39,17 @@ class DurationLUT {
   byte encode(int ticks, byte offset);
   void add_row(Row row) { rows_.push_back(std::move(row)); }
   void add_row(std::vector<byte> data) { rows_.emplace_back(std::move(data)); }
-  void reset_error();
+  void reset();
+  bool has_error() const;
+  float error() const;
 
  private:
   std::vector<Row> rows_;
 
   Row* get_row(byte offset);
 };
+
+std::ostream& operator<<(std::ostream& os, const DurationLUT::Row& row);
 
 }  // namespace z2music
 
