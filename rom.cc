@@ -627,8 +627,6 @@ std::vector<byte> Rom::encode_pattern(const Pattern& pattern) {
 std::vector<byte> Rom::encode_note_data(const std::vector<Note>& notes,
                                         byte offset, bool null_terminated,
                                         bool title) {
-  LOG(INFO) << "Encoding " << (title ? "title " : "") << "note data";
-
   std::vector<byte> data;
   data.reserve(notes.size() + null_terminated ? 1 : 0);
 

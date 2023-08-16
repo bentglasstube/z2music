@@ -1,9 +1,7 @@
 #include "pattern.h"
 
 #include <array>
-#include <sstream>
 
-#include "absl/log/log.h"
 #include "gtest/gtest.h"
 #include "note.h"
 #include "pitch.h"
@@ -57,12 +55,6 @@ class TestWithFakeRom : public ::testing::Test {
 };
 
 TEST_F(TestWithFakeRom, SingleChannel) {
-  std::ostringstream data;
-  for (const auto p : rom.pitch_lut()) {
-    data << p.to_string() << " ";
-  }
-  LOG(INFO) << "Pitch LUT data: " << data.str();
-
   Pattern pattern = Pattern(0x18,
                             {{Pitch(Pitch::A4), Note::Duration::Eighth},
                              {Pitch(Pitch::C5), Note::Duration::Quarter},

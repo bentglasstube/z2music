@@ -117,7 +117,6 @@ cc_test(
   name = "pattern_test",
   srcs = ["pattern_test.cc"],
   deps = [
-    "@absl//absl/log:log",
     "@googletest//:gtest_main",
     ":note",
     ":pattern",
