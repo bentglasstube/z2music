@@ -11,6 +11,11 @@ byte DurationLUT::encode(int ticks, byte offset) {
   return row ? row->encode(ticks) : byte{0};
 }
 
+int DurationLUT::decode(byte b, byte offset) const {
+  const Row* row = get_row(offset);
+  return row ? row->decode(b) : 0;
+}
+
 void DurationLUT::reset() {
   for (auto& row : rows_) row.reset();
 }
@@ -31,6 +36,19 @@ float DurationLUT::error() const {
 }
 
 DurationLUT::Row* DurationLUT::get_row(byte offset) {
+  size_t index = 0;
+  while (true) {
+    if (offset == 0) return &rows_[index];
+    if (index >= rows_.size()) {
+      LOG(ERROR) << "No row in duration LUT at offset " << offset;
+      return nullptr;
+    }
+    offset -= rows_[index++].size();
+  }
+}
+
+// TODO deduplicate this from above
+const DurationLUT::Row* DurationLUT::get_row(byte offset) const {
   size_t index = 0;
   while (true) {
     if (offset == 0) return &rows_[index];

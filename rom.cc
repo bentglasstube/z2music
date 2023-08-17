@@ -484,23 +484,28 @@ Pattern Rom::read_pattern(Address address) const {
 
   Address note_base = (header[2] << 8) + header[1] + 0x10000;
 
-  pattern.add_notes(Pattern::Channel::Pulse1, read_notes(note_base));
+  pattern.add_notes(Pattern::Channel::Pulse1,
+                    read_notes(note_base, pattern.tempo()));
   size_t max_length = pattern.length();
 
   if (header[3])
-    pattern.add_notes(Pattern::Channel::Triangle,
-                      read_notes(note_base + header[3], max_length));
+    pattern.add_notes(
+        Pattern::Channel::Triangle,
+        read_notes(note_base + header[3], pattern.tempo(), max_length));
   if (header[4])
-    pattern.add_notes(Pattern::Channel::Pulse2,
-                      read_notes(note_base + header[4], max_length));
+    pattern.add_notes(
+        Pattern::Channel::Pulse2,
+        read_notes(note_base + header[4], pattern.tempo(), max_length));
   if (header[5])
-    pattern.add_notes(Pattern::Channel::Noise,
-                      read_notes(note_base + header[5], max_length));
+    pattern.add_notes(
+        Pattern::Channel::Noise,
+        read_notes(note_base + header[5], pattern.tempo(), max_length));
 
   return pattern;
 }
 
-std::vector<Note> Rom::read_notes(Address address, size_t max_length) const {
+std::vector<Note> Rom::read_notes(Address address, byte tempo,
+                                  size_t max_length) const {
   size_t length = 0;
   std::vector<Note> notes;
 
@@ -508,7 +513,7 @@ std::vector<Note> Rom::read_notes(Address address, size_t max_length) const {
     const byte b = getc(address++);
     // FIXME only Pulse1 and Noise channels can be null terminated
     if (b == 0x00) break;
-    const Note n = decode_note(b);
+    const Note n = decode_note(b, tempo);
     length += n.ticks();
     notes.emplace_back(std::move(n));
   }
@@ -533,10 +538,9 @@ Credits Rom::read_credits(Address address) const {
   return credits;
 }
 
-Note Rom::decode_note(byte b) const {
+Note Rom::decode_note(byte b, byte tempo) const {
   auto pitch = pitch_lut_[PitchLUT::mask(b)];
-  // FIXME look up duration in LUT
-  auto ticks = Note::Duration::Quarter;
+  auto ticks = (tempo ? duration_lut_ : title_duration_lut_).decode(b, tempo);
   return {pitch, ticks};
 }
 
@@ -551,6 +555,7 @@ void Rom::rebuild_pitch_lut() {
       pitches.merge(song.pitches_used());
     }
   }
+  pitches.erase(Pitch::none());
 
   LOG(INFO) << "Found " << pitches.size() << " unique pitches used.";
   if (pitches.size() >= kPitchLUTLimit) {
@@ -564,6 +569,7 @@ void Rom::rebuild_pitch_lut() {
   auto first = pitches.begin();
   pitch_lut_.add_pitch(*first);
   pitches.erase(first);
+  LOG(INFO) << "Saving pitch " << (*first) << " at index 0x00";
 
   // add rest in slot 2
   pitch_lut_.add_pitch(Pitch::none());

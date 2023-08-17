@@ -125,10 +125,11 @@ class Rom {
 
   Song read_song(Address address, byte entry) const;
   Pattern read_pattern(Address address) const;
-  std::vector<Note> read_notes(Address address, size_t max_length = 0) const;
+  std::vector<Note> read_notes(Address address, byte offset,
+                               size_t max_length = 0) const;
 
   Credits read_credits(Address address) const;
-  Note decode_note(byte b) const;
+  Note decode_note(byte b, byte offset) const;
 
   void rebuild_pitch_lut();
 
