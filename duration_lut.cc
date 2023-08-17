@@ -46,11 +46,6 @@ byte DurationLUT::Row::encode(int ticks) {
   float target = ticks * ratio() - error_;
   byte value = static_cast<byte>(std::round(target));
   error_ += (target - value);
-
-  LOG(INFO) << "Encoding duration " << ticks << " vs base " << base();
-  LOG(INFO) << "target = " << target << ", value = " << value;
-  LOG(INFO) << "error_ = " << error_;
-
   return index_for(value);
 }
 
