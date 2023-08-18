@@ -524,6 +524,7 @@ std::vector<Note> Rom::read_notes(Address address, byte tempo,
         duration = title_duration_lut_.decode(b & 0x0f, 0);
       } else if (b == 0x02) {
         notes.emplace_back(Pitch::none(), duration);
+        length += duration;
       } else {
         // The title music adds 4 to non-rests before looking them up
         auto pitch = title_pitch_lut_[b + 4];
