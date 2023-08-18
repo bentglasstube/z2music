@@ -531,7 +531,7 @@ std::vector<Note> Rom::read_notes(Address address, byte tempo,
       }
     } else {
       auto pitch = pitch_lut_[PitchLUT::mask(b)];
-      auto ticks = duration_lut_.decode(b, tempo);
+      auto ticks = duration_lut_.decode(DurationLUT::shift(b), tempo);
       length += ticks;
       notes.emplace_back(pitch, ticks);
     }
@@ -673,7 +673,7 @@ std::vector<byte> Rom::encode_note_data(const std::vector<Note>& notes,
     } else {
       byte p = pitch_lut_.index_for(n.pitch());
       byte d = lut.encode(n.ticks(), offset);
-      data.push_back(p | ((d & 0b11) << 6) | ((d & 0b100) >> 2));
+      data.push_back(p | DurationLUT::unshift(d));
     }
   }
 

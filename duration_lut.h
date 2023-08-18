@@ -45,7 +45,10 @@ class DurationLUT {
   bool has_error() const;
   float error() const;
 
-  static byte mask(byte b) { return ((b & 0b11) << 6) | ((b & 0b100) >> 2); }
+  static byte shift(byte b) {
+    return ((b & 0b11000000) >> 6) | ((b & 0b1) << 2);
+  }
+  static byte unshift(byte b) { return ((b & 0b11) << 6) | ((b & 0b100) >> 2); }
 
  private:
   std::vector<Row> rows_;
