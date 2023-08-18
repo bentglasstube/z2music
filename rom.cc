@@ -473,8 +473,6 @@ Song Rom::read_song(Address address, byte entry) const {
 Pattern Rom::read_pattern(Address address) const {
   Pattern pattern;
 
-  LOG(INFO) << "Reading pattern at " << address;
-
   byte header[6];
   read(header, address, 6);
 
@@ -528,6 +526,7 @@ std::vector<Note> Rom::read_notes(Address address, byte tempo,
         // The title music adds 4 to non-rests before looking them up
         auto pitch = title_pitch_lut_[b + 4];
         notes.emplace_back(pitch, duration);
+        length += duration;
       }
     } else {
       auto pitch = pitch_lut_[PitchLUT::mask(b)];
@@ -535,6 +534,11 @@ std::vector<Note> Rom::read_notes(Address address, byte tempo,
       length += ticks;
       notes.emplace_back(pitch, ticks);
     }
+  }
+
+  if (max_length > 0 && length > max_length) {
+    LOG(WARNING) << "Notes longer than max_length given: " << length << " > "
+                 << max_length << " > " << (length - notes.back().ticks());
   }
 
   return notes;
