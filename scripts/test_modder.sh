@@ -2,8 +2,7 @@
 
 set -e
 
-PROJECT=amida
-CORE=nestopia
+PROJECT=rog
 
 function test() {
   local input="$1"

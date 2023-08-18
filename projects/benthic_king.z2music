@@ -1,8 +1,8 @@
 song PalaceIntro
 pattern 0x08
 E5.2 C5 A4 E4 C5 A4 E4 C4 A4 E4 C4 A3 E4 C4 A3 E3
-r.8 r r r
-r.8 r r r
+r.9 r r r
+r.9 r r r
 
 sequence 1
 
