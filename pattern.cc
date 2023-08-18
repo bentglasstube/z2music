@@ -109,7 +109,20 @@ size_t Pattern::note_data_length() const {
 }
 
 size_t Pattern::note_data_length(Pattern::Channel ch) const {
-  return notes_.at(ch).size() + (pad_note_data(ch) ? 1 : 0);
+  if (voiced()) {
+    int dur = 0;
+    size_t length = 0;
+    for (const auto& n : notes_.at(ch)) {
+      if (dur != n.ticks()) {
+        ++length;
+        dur = n.ticks();
+      }
+      ++length;
+    }
+    return length + (pad_note_data(ch) ? 1 : 0);
+  } else {
+    return notes_.at(ch).size() + (pad_note_data(ch) ? 1 : 0);
+  }
 }
 
 namespace {
@@ -191,11 +204,21 @@ std::vector<Note> Pattern::parse_notes(const std::string& data, int transpose) {
         if (octave == 0) {
           octave = c - '0';
         } else {
-          duration = c - '0';
+          duration = duration * 10 + (c - '0');
+        }
+        break;
+
+      case '9':
+      case '0':
+        if (octave == 0) {
+          LOG(WARNING) << "Octave " << c << " is not supported";
+        } else {
+          duration = duration * 10 + (c - '0');
         }
         break;
 
       case '.':
+        duration = 0;
         triplet = false;
         break;
 

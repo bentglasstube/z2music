@@ -669,7 +669,11 @@ std::vector<byte> Rom::encode_note_data(const std::vector<Note>& notes,
         prev = n.ticks();
         data.push_back(lut.encode(n.ticks(), offset) | 0x80);
       }
-      data.push_back(title_pitch_lut_.index_for(n.pitch()));
+      if (n.pitch() == Pitch::none()) {
+        data.push_back(0x02);
+      } else {
+        data.push_back(title_pitch_lut_.index_for(n.pitch()) - 4);
+      }
     } else {
       byte p = pitch_lut_.index_for(n.pitch());
       byte d = lut.encode(n.ticks(), offset);
