@@ -13,6 +13,8 @@ struct StrongInt {
   T operator++() { return ++value; }
   T operator++(int) { return value++; }
   T operator+=(T other) { return value += other; }
+  T operator--() { return --value; }
+  T operator--(int) { return value--; }
   T operator-=(T other) { return value -= other; }
 
   T value;

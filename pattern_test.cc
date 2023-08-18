@@ -107,13 +107,35 @@ TEST_F(TestWithFakeRom, AllChannels) {
 TEST_F(TestWithFakeRom, Triplets) {
   Pattern pattern = Pattern(0x18,
                             {{Pitch(Pitch::C3), Note::Duration::EighthTriplet},
-                             {Pitch(Pitch::E3), Note::Duration::EighthTriplet},
-                             {Pitch(Pitch::G3), Note::Duration::EighthTriplet}},
+                             {Pitch(Pitch::C3), Note::Duration::EighthTriplet},
+                             {Pitch(Pitch::C3), Note::Duration::EighthTriplet}},
                             {}, {}, {});
 
-  // FIXME this is what data is generated but it's incorrect.
+  // Row 0x18 has true triplets
   EXPECT_DATA_EQ(pattern, {0x18, 0x34, 0x12, 0x00, 0x00, 0x00},
-                 {0x81, 0x85, 0x87, 0x00});
+                 {0x81, 0x81, 0x81, 0x00});
+
+  // Row 0x10 has to round
+  pattern.tempo(0x10);
+  EXPECT_DATA_EQ(pattern, {0x10, 0x34, 0x12, 0x00, 0x00, 0x00},
+                 {0x81, 0x81, 0xc1, 0x00});
+
+  // Row 0x28 rounds the opposite way
+  pattern.tempo(0x28);
+  EXPECT_DATA_EQ(pattern, {0x28, 0x34, 0x12, 0x00, 0x00, 0x00},
+                 {0x81, 0x81, 0xc1, 0x00});
+}
+
+TEST_F(TestWithFakeRom, QuarterTriplets) {
+  Pattern pattern =
+      Pattern(0x18,
+              {{Pitch(Pitch::C3), Note::Duration::QuarterTriplet},
+               {Pitch(Pitch::C3), Note::Duration::QuarterTriplet},
+               {Pitch(Pitch::C3), Note::Duration::QuarterTriplet}},
+              {}, {}, {});
+
+  EXPECT_DATA_EQ(pattern, {0x18, 0x34, 0x12, 0x00, 0x00, 0x00},
+                 {0xc1, 0xc1, 0xc1, 0x00});
 }
 
 TEST_F(TestWithFakeRom, Parsing) {

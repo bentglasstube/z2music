@@ -439,10 +439,12 @@ DurationLUT Rom::read_duration_lut(Address address, size_t entries) const {
 
 DurationLUT::Row Rom::read_duration_lut_row(Address address,
                                             size_t entries) const {
-  DurationLUT::Row row(getc(address));
-  for (size_t i = 1; i < entries; ++i) {
-    row.add_value(getc(address + i));
+  std::vector<byte> data;
+  data.reserve(entries);
+  for (size_t i = 0; i < entries; ++i) {
+    data.push_back(getc(address + i));
   }
+  DurationLUT::Row row{data};
   LOG(INFO) << "Durations: " << row;
   return row;
 }

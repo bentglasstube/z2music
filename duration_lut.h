@@ -14,14 +14,13 @@ class DurationLUT {
  public:
   class Row {
    public:
-    Row(byte base) : values_({base}), error_(0.f) {}
     Row(std::vector<byte> data) : values_(std::move(data)), error_(0.f) {}
 
     byte encode(int ticks);
     int decode(byte b) const;
-    byte base() const { return values_[0]; }
+    byte base() const { return values_[2]; }
     float ratio() const {
-      return base() / static_cast<float>(Note::Duration::Sixteenth);
+      return base() / static_cast<float>(Note::Duration::Eighth);
     }
     byte index_for(int ticks) const;
     size_t size() const { return values_.size(); }
@@ -52,6 +51,8 @@ class DurationLUT {
 
  private:
   std::vector<Row> rows_;
+
+  static constexpr float kEpsilon = 1 / 96.f;
 
   Row* get_row(byte offset);
   const Row* get_row(byte offset) const;

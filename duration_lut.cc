@@ -22,7 +22,7 @@ void DurationLUT::reset() {
 
 bool DurationLUT::has_error() const {
   for (const auto& row : rows_) {
-    if (row.error() > 0) return true;
+    if (row.error() > kEpsilon) return true;
   }
   return false;
 }
@@ -61,15 +61,33 @@ const DurationLUT::Row* DurationLUT::get_row(byte offset) const {
 }
 
 byte DurationLUT::Row::encode(int ticks) {
-  float target = ticks * ratio() - error_;
+  float target = ticks * ratio();
   byte value = static_cast<byte>(std::round(target));
+
+  if (target != value) {
+    LOG(INFO) << "Rounding " << target << " to " << static_cast<int>(value);
+  }
+
   error_ += (target - value);
+
+  if (error_ >= 1 - kEpsilon) {
+    LOG(INFO) << "Adjusting value up one";
+    ++value;
+    error_ -= 1.f;
+  } else if (error_ <= -1 + kEpsilon) {
+    LOG(INFO) << "Adjusting value down one";
+    --value;
+    error_ += 1.f;
+  }
+
+  if (std::abs(error_) > kEpsilon) LOG(INFO) << "Accumulated error: " << error_;
+
   return index_for(value);
 }
 
 int DurationLUT::Row::decode(byte index) const {
   float ratio = values_[index] / base();
-  return std::round(ratio * Note::Duration::Sixteenth);
+  return std::round(ratio * Note::Duration::Eighth);
 }
 
 byte DurationLUT::Row::index_for(int value) const {

@@ -103,17 +103,6 @@ cc_library(
 )
 
 cc_test(
-  name = "pitch_test",
-  srcs = ["pitch_test.cc"],
-  deps = [
-    "@absl//absl/log:log",
-    "@googletest//:gtest_main",
-    ":pitch",
-  ],
-  size = 'small',
-)
-
-cc_test(
   name = "pattern_test",
   srcs = ["pattern_test.cc"],
   deps = [
@@ -122,6 +111,17 @@ cc_test(
     ":pattern",
     ":pitch",
     ":rom",
+  ],
+  size = 'small',
+)
+
+cc_test(
+  name = "pitch_test",
+  srcs = ["pitch_test.cc"],
+  deps = [
+    "@absl//absl/log:log",
+    "@googletest//:gtest_main",
+    ":pitch",
   ],
   size = 'small',
 )
