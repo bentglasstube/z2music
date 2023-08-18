@@ -473,6 +473,8 @@ Song Rom::read_song(Address address, byte entry) const {
 Pattern Rom::read_pattern(Address address) const {
   Pattern pattern;
 
+  LOG(INFO) << "Reading pattern at " << address;
+
   byte header[6];
   read(header, address, 6);
 
@@ -480,6 +482,8 @@ Pattern Rom::read_pattern(Address address) const {
 
   if (pattern.voiced()) {
     pattern.set_voicing(getc(address + 6), getc(address + 7));
+    LOG(INFO) << "Title pattern, voicing: " << pattern.voice1() << " "
+              << pattern.voice2();
   }
 
   Address note_base = (header[2] << 8) + header[1] + 0x10000;
@@ -507,15 +511,30 @@ Pattern Rom::read_pattern(Address address) const {
 std::vector<Note> Rom::read_notes(Address address, byte tempo,
                                   size_t max_length) const {
   size_t length = 0;
+  int duration = 0;
   std::vector<Note> notes;
 
   while (max_length == 0 || length < max_length) {
     const byte b = getc(address++);
     // FIXME only Pulse1 and Noise channels can be null terminated
     if (b == 0x00) break;
-    const Note n = decode_note(b, tempo);
-    length += n.ticks();
-    notes.emplace_back(std::move(n));
+
+    if (tempo == 0) {
+      if (b & 0x80) {
+        duration = title_duration_lut_.decode(b & 0x0f, 0);
+      } else if (b == 0x02) {
+        notes.emplace_back(Pitch::none(), duration);
+      } else {
+        // The title music adds 4 to non-rests before looking them up
+        auto pitch = title_pitch_lut_[b + 4];
+        notes.emplace_back(pitch, duration);
+      }
+    } else {
+      auto pitch = pitch_lut_[PitchLUT::mask(b)];
+      auto ticks = duration_lut_.decode(b, tempo);
+      length += ticks;
+      notes.emplace_back(pitch, ticks);
+    }
   }
 
   return notes;
@@ -538,11 +557,7 @@ Credits Rom::read_credits(Address address) const {
   return credits;
 }
 
-Note Rom::decode_note(byte b, byte tempo) const {
-  auto pitch = pitch_lut_[PitchLUT::mask(b)];
-  auto ticks = (tempo ? duration_lut_ : title_duration_lut_).decode(b, tempo);
-  return {pitch, ticks};
-}
+Note Rom::decode_note(byte b, byte tempo) const {}
 
 void Rom::rebuild_pitch_lut() {
   LOG(INFO) << "Rebuilding pitch LUT";

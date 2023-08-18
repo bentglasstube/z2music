@@ -19,6 +19,9 @@ class PitchLUT {
 
   byte index_for(const Pitch& pitch) const;
   byte add_pitch(const Pitch& pitch);
+  void add_pitches(const std::vector<Pitch>& pitches) {
+    for (const auto& p : pitches) add_pitch(p);
+  }
 
   static byte mask(byte b) { return b & 0b00111110; }
 

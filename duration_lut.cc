@@ -67,6 +67,11 @@ byte DurationLUT::Row::encode(int ticks) {
   return index_for(value);
 }
 
+int DurationLUT::Row::decode(byte index) const {
+  float ratio = values_[index] / base();
+  return std::round(ratio * Note::Duration::Sixteenth);
+}
+
 byte DurationLUT::Row::index_for(int value) const {
   for (size_t i = 0; i < values_.size(); ++i) {
     if (values_[i] == value) return i;

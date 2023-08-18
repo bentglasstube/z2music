@@ -18,7 +18,7 @@ class DurationLUT {
     Row(std::vector<byte> data) : values_(std::move(data)), error_(0.f) {}
 
     byte encode(int ticks);
-    int decode(byte b) const { return values_[b]; }
+    int decode(byte b) const;
     byte base() const { return values_[0]; }
     float ratio() const {
       return base() / static_cast<float>(Note::Duration::Sixteenth);

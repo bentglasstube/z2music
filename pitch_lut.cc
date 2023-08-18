@@ -9,6 +9,8 @@ Pitch PitchLUT::at(byte index) const {
 }
 
 byte PitchLUT::index_for(const Pitch& pitch) const {
+  // hardcode the rest value because it has special handling
+  if (pitch == Pitch::none()) return 2;
   for (size_t i = 0; i < table_.size(); ++i) {
     if (table_[i] == pitch) return i * 2;
   }

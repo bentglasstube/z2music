@@ -43,6 +43,15 @@ class TestWithFakeRom : public ::testing::Test {
         {0x07, 0x15, 0x0e, 0x1c, 0x2a, 0x38, 0x13, 0x12});
     rom.duration_lut().add_row(
         {0x07, 0x15, 0x0e, 0x1c, 0x2a, 0x38, 0x09, 0x0a});
+
+    rom.title_pitch_lut().add_pitch(Pitch::none());
+    rom.title_pitch_lut().add_pitch(Pitch::none());
+    for (int p = Pitch::C2; p <= Pitch::Cs7; ++p) {
+      rom.title_pitch_lut().add_pitch(Pitch(static_cast<Pitch::Midi>(p)));
+    }
+
+    rom.title_duration_lut().add_row(
+        {8, 24, 16, 32, 48, 64, 96, 128, 11, 10, 80});
   }
 
   void EXPECT_DATA_EQ(const Pattern& pattern, const std::vector<byte> metadata,
@@ -52,6 +61,8 @@ class TestWithFakeRom : public ::testing::Test {
     auto encoded_data = rom.encode_pattern(pattern);
     EXPECT_EQ(encoded_data, expected_data);
   }
+
+  Pattern read_pattern(Address address) { return rom.read_pattern(address); }
 };
 
 TEST_F(TestWithFakeRom, SingleChannel) {
@@ -115,6 +126,25 @@ TEST_F(TestWithFakeRom, Parsing) {
                      0xc8, 0xc8, 0x88, 0x09, 0xc8, 0xc8, 0x88, 0xc8, 0x88, 0xc8,
                  });
 }
+
+TEST_F(TestWithFakeRom, TitleParsing) {}
+
+TEST_F(TestWithFakeRom, Dumping) {
+  const Address address = 0x012345;
+  rom.write(address, {
+                         0x00, 0x4d, 0x23, 0x00, 0x00, 0x00, 0x00, 0x00, 0x83,
+                         0x02, 0x48, 0x82, 0x46, 0x83, 0x3E, 0x34, 0x84, 0x2E,
+                         0x83, 0x30, 0x34, 0x3A, 0x38, 0x34, 0x30, 0x82, 0x34,
+                         0x83, 0x30, 0x85, 0x2E, 0x82, 0x02, 0x00,
+                     });
+
+  Pattern pattern = read_pattern(address);
+  EXPECT_EQ(pattern.length(), Note::Duration::Whole * 4);
+  EXPECT_EQ(pattern.dump_notes(Pattern::Channel::Pulse1),
+            "r.4 C5 B4.2 G4.4 D4 B3.6 C4.4 D4 F4 E4 D4 C4 D4.2 C4.4 B3.8 r.2");
+}
+
+TEST_F(TestWithFakeRom, TitleDumping) {}
 
 TEST(PatternTest, RoundTrip) {
   const std::string input_pw1 =
