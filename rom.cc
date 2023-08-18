@@ -677,6 +677,11 @@ std::vector<byte> Rom::encode_note_data(const std::vector<Note>& notes,
     }
   }
 
+  if (lut.has_error()) {
+    LOG(WARNING) << "Duration LUT has error remaining after encoding: "
+                 << lut.error();
+  }
+
   if (null_terminated) data.push_back(0x00);
 
   return data;
