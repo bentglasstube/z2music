@@ -582,15 +582,7 @@ void Rom::rebuild_pitch_lut() {
 
   pitch_lut_.clear();
 
-  // FIXME check that this note isn't used improperly
-  auto first = pitches.begin();
-  pitch_lut_.add_pitch(*first);
-  pitches.erase(first);
-  LOG(INFO) << "Saving pitch " << (*first) << " at index 0x00";
-
-  // add rest in slot 2
-  pitch_lut_.add_pitch(Pitch::none());
-
+  // FIXME check that the first pitch isn't used improperly
   for (auto const& p : pitches) {
     byte i = pitch_lut_.add_pitch(p);
     LOG(INFO) << "Saving pitch " << p << " at index " << i;

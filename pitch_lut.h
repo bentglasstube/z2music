@@ -15,18 +15,18 @@ class PitchLUT {
   Pitch at(byte index) const;
   Pitch operator[](byte index) const { return at(index); }
   void clear() { table_.clear(); }
-  size_t size() const { return table_.size(); }
+  size_t size() const { return table_.size() == 0 ? 0 : table_.size() + 1; }
 
   byte index_for(const Pitch& pitch) const;
-  byte add_pitch(const Pitch& pitch);
+  byte add_pitch(Pitch pitch);
   void add_pitches(const std::vector<Pitch>& pitches) {
     for (const auto& p : pitches) add_pitch(p);
   }
 
   static byte mask(byte b) { return b & 0b00111110; }
 
-  const Pitch* begin() const { return &table_[0]; }
-  const Pitch* end() const { return &table_[table_.size()]; }
+  std::vector<Pitch>::const_iterator begin() const { return table_.begin(); }
+  std::vector<Pitch>::const_iterator end() const { return table_.end(); }
 
  private:
   std::vector<Pitch> table_;

@@ -14,19 +14,17 @@ class TestWithFakeRom : public ::testing::Test {
   Rom rom;
 
   TestWithFakeRom() {
-    std::array<Pitch::Midi, 59> pitches = {
-        Pitch::E3,  Pitch::G3,  Pitch::Gs3, Pitch::A3,  Pitch::As3, Pitch::B3,
-        Pitch::C4,  Pitch::Cs4, Pitch::D4,  Pitch::Ds4, Pitch::E4,  Pitch::F4,
-        Pitch::Fs4, Pitch::G4,  Pitch::Gs4, Pitch::A4,  Pitch::As4, Pitch::B4,
-        Pitch::C5,  Pitch::Cs5, Pitch::D5,  Pitch::Ds5, Pitch::E5,  Pitch::F5,
-        Pitch::Fs5, Pitch::G5,  Pitch::A5,  Pitch::As5, Pitch::B5,  Pitch::Cs3,
-        Pitch::D3,  Pitch::Ds3, Pitch::F3,  Pitch::Fs3, Pitch::Gs5, Pitch::C6,
-        Pitch::Cs6, Pitch::D6,  Pitch::Ds6, Pitch::E6,  Pitch::F6,  Pitch::Fs6,
-        Pitch::G6,  Pitch::Gs6, Pitch::A6,  Pitch::As6, Pitch::B6,  Pitch::C7,
-        Pitch::Cs7, Pitch::D7,  Pitch::Ds7, Pitch::E7,  Pitch::F7,  Pitch::Fs7,
-        Pitch::G7,  Pitch::Gs7, Pitch::A7,  Pitch::As7, Pitch::B7};
-    rom.pitch_lut().add_pitch(Pitch(Pitch::C3));
-    rom.pitch_lut().add_pitch(Pitch::none());
+    std::array<Pitch::Midi, 60> pitches = {
+        Pitch::C3,  Pitch::E3,  Pitch::G3,  Pitch::Gs3, Pitch::A3,  Pitch::As3,
+        Pitch::B3,  Pitch::C4,  Pitch::Cs4, Pitch::D4,  Pitch::Ds4, Pitch::E4,
+        Pitch::F4,  Pitch::Fs4, Pitch::G4,  Pitch::Gs4, Pitch::A4,  Pitch::As4,
+        Pitch::B4,  Pitch::C5,  Pitch::Cs5, Pitch::D5,  Pitch::Ds5, Pitch::E5,
+        Pitch::F5,  Pitch::Fs5, Pitch::G5,  Pitch::A5,  Pitch::As5, Pitch::B5,
+        Pitch::Cs3, Pitch::D3,  Pitch::Ds3, Pitch::F3,  Pitch::Fs3, Pitch::Gs5,
+        Pitch::C6,  Pitch::Cs6, Pitch::D6,  Pitch::Ds6, Pitch::E6,  Pitch::F6,
+        Pitch::Fs6, Pitch::G6,  Pitch::Gs6, Pitch::A6,  Pitch::As6, Pitch::B6,
+        Pitch::C7,  Pitch::Cs7, Pitch::D7,  Pitch::Ds7, Pitch::E7,  Pitch::F7,
+        Pitch::Fs7, Pitch::G7,  Pitch::Gs7, Pitch::A7,  Pitch::As7, Pitch::B7};
     for (auto const p : pitches) {
       rom.pitch_lut().add_pitch(Pitch(p));
     }
@@ -44,7 +42,6 @@ class TestWithFakeRom : public ::testing::Test {
     rom.duration_lut().add_row(
         {0x07, 0x15, 0x0e, 0x1c, 0x2a, 0x38, 0x09, 0x0a});
 
-    rom.title_pitch_lut().add_pitch(Pitch::none());
     rom.title_pitch_lut().add_pitch(Pitch::none());
     for (int p = Pitch::C2; p <= Pitch::Cs7; ++p) {
       rom.title_pitch_lut().add_pitch(Pitch(static_cast<Pitch::Midi>(p)));
