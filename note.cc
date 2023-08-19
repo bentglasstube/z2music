@@ -8,7 +8,9 @@ std::string Note::duration_string() const {
   if (ticks_ % Duration::Sixteenth == 0) {
     return std::to_string(ticks_ / Duration::Sixteenth);
   } else {
-    return "t" + std::to_string(ticks_ / Duration::EighthTriplet * 2);
+    int length =
+        std::round(ticks_ * 2 / static_cast<float>(Duration::EighthTriplet));
+    return std::to_string(length) + "t";
   }
 }
 

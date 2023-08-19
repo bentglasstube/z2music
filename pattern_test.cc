@@ -215,17 +215,17 @@ TEST_F(TestWithFakeRom, TitleDumping) {
 
 TEST(PatternTest, RoundTrip) {
   const std::string input_pw1 =
-      "F4.8 r.t2 r F4 F4 F4 F4 F4 r D#4 F4.4 r.t2 r F4 F4 F4 F4 F4 r D#4 "
+      "F4.8 r.2t r F4 F4 F4 F4 F4 r D#4 F4.4 r.2t r F4 F4 F4 F4 F4 r D#4 "
       "F4.4 "
-      "r.t2 r F4 F4 F4 F4 F4.2 C4.1 C4 C4.2 C4.1 C4 C4.2 C4.1 C4 C4.2 C4";
+      "r.2t r F4 F4 F4 F4 F4.2 C4.1 C4 C4.2 C4.1 C4 C4.2 C4.1 C4 C4.2 C4";
   const std::string input_pw2 =
-      "A3.8 r.t2 r A3 A3 A3 A3 G3 r G3 G3.4 r G3.t2 G3 G3 G#3 r G#3 G#3.4 "
-      "r.t2 "
+      "A3.8 r.2t r A3 A3 A3 A3 G3 r G3 G3.4 r G3.2t G3 G3 G#3 r G#3 G#3.4 "
+      "r.2t "
       "r G#3 G#3 G#3 G#3 G#3.2 E3.1 E3 E3.2 E3.1 E3 E3.2 E3.1 E3 E3.2 E3";
   const std::string input_triangle =
-      "F4.4 F4.t2 F4 F4 F4.4 F4.t2 F4 F4 D#4.4 D#4.t2 D#4 D#4 D#4.4 D#4.t2 "
+      "F4.4 F4.2t F4 F4 F4.4 F4.2t F4 F4 D#4.4 D#4.2t D#4 D#4 D#4.4 D#4.2t "
       "D#4 "
-      "D#4 C#4.4 C#4.t2 C#4 C#4 C#4.4 C#4.t2 C#4 C#4 C4.4 C4 C4 D4.2 E4";
+      "D#4 C#4.4 C#4.2t C#4 C#4 C#4.4 C#4.2t C#4 C#4 C4.4 C4 C4 D4.2 E4";
   const std::string input_noise =
       "G#3.4 G#3 G#3 G#3 G#3 G#3 G#3 G#3 G#3 G#3 G#3 G#3 G#3 G#3 G#3 G#3";
 
@@ -266,6 +266,16 @@ TEST(PatternTest, RoundTrip2) {
   EXPECT_EQ(input_triangle,
             pattern.dump_notes(z2music::Pattern::Channel::Triangle));
   EXPECT_EQ(input_noise, pattern.dump_notes(z2music::Pattern::Channel::Noise));
+}
+
+TEST_F(TestWithFakeRom, TownTheme06) {
+  add_pattern(0x1234, 0x20,
+              {0xe4, 0xa0, 0xe4, 0x21, 0x9f, 0xa7, 0xed, 0x77, 0x00});
+
+  Pattern pattern = read_pattern(0x1234);
+  EXPECT_EQ(pattern.length(), Note::Duration::Whole * 2);
+  EXPECT_EQ(pattern.dump_notes(Pattern::Channel::Pulse1),
+            "A#4.4 G#4.2 A#4.4 G#4.6 G4.4t B4 D5 G5.8");
 }
 
 }  // namespace z2music

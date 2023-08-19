@@ -264,16 +264,16 @@ std::vector<Note> Pattern::parse_notes(const std::string& data, int transpose) {
 }
 
 std::string Pattern::dump_notes(Channel ch) const {
-  int prev = -1;
+  std::string prev = "";
 
   std::ostringstream output;
   for (const auto note : notes(ch)) {
     if (output.tellp() > 0) output << " ";
     output << note.pitch();
-
-    if (note.ticks() != prev) {
-      output << "." << note.duration_string();
-      prev = note.ticks();
+    const std::string dur = note.duration_string();
+    if (dur != prev) {
+      output << "." << dur;
+      prev = dur;
     }
   }
   return output.str();
