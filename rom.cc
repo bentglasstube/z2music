@@ -56,6 +56,8 @@ Rom::Rom(const std::string& filename) {
         read_song(great_palace_song_table, 4);
     songs_[SongTitle::TriforceFanfare] = read_song(great_palace_song_table, 5);
     songs_[SongTitle::FinalBossTheme] = read_song(great_palace_song_table, 6);
+  } else {
+    LOG(ERROR) << "Unable to open ROM file: " << filename;
   }
 }
 
