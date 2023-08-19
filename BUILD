@@ -28,6 +28,17 @@ cc_library(
 )
 
 cc_library(
+  name = "fake_rom",
+  hdrs = ["fake_rom.h"],
+  srcs = ["fake_rom.cc"],
+  deps = [
+    ":pitch",
+    ":rom",
+    ":util",
+  ],
+)
+
+cc_library(
   name = "note",
   hdrs = ["note.h"],
   srcs = ["note.cc"],
@@ -107,6 +118,7 @@ cc_test(
   srcs = ["pattern_test.cc"],
   deps = [
     "@googletest//:gtest_main",
+    ":fake_rom",
     ":note",
     ":pattern",
     ":pitch",

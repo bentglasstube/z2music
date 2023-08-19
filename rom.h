@@ -88,7 +88,7 @@ class Rom {
 
   static SongTitle title_by_name(const std::string& name);
 
- private:
+ protected:
   static constexpr size_t kHeaderSize = 0x10;
   static constexpr size_t kRomSize = 0x040000;
   static constexpr size_t kTitleDurationLUTAddress = 0x018084;

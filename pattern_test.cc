@@ -2,6 +2,7 @@
 
 #include <array>
 
+#include "fake_rom.h"
 #include "gtest/gtest.h"
 #include "note.h"
 #include "pitch.h"
@@ -11,72 +12,13 @@ namespace z2music {
 
 class TestWithFakeRom : public ::testing::Test {
  protected:
-  Rom rom;
-
-  TestWithFakeRom() {
-    std::array<Pitch::Midi, 60> pitches = {
-        Pitch::C3,  Pitch::E3,  Pitch::G3,  Pitch::Gs3, Pitch::A3,  Pitch::As3,
-        Pitch::B3,  Pitch::C4,  Pitch::Cs4, Pitch::D4,  Pitch::Ds4, Pitch::E4,
-        Pitch::F4,  Pitch::Fs4, Pitch::G4,  Pitch::Gs4, Pitch::A4,  Pitch::As4,
-        Pitch::B4,  Pitch::C5,  Pitch::Cs5, Pitch::D5,  Pitch::Ds5, Pitch::E5,
-        Pitch::F5,  Pitch::Fs5, Pitch::G5,  Pitch::A5,  Pitch::As5, Pitch::B5,
-        Pitch::Cs3, Pitch::D3,  Pitch::Ds3, Pitch::F3,  Pitch::Fs3, Pitch::Gs5,
-        Pitch::C6,  Pitch::Cs6, Pitch::D6,  Pitch::Ds6, Pitch::E6,  Pitch::F6,
-        Pitch::Fs6, Pitch::G6,  Pitch::Gs6, Pitch::A6,  Pitch::As6, Pitch::B6,
-        Pitch::C7,  Pitch::Cs7, Pitch::D7,  Pitch::Ds7, Pitch::E7,  Pitch::F7,
-        Pitch::Fs7, Pitch::G7,  Pitch::Gs7, Pitch::A7,  Pitch::As7, Pitch::B7};
-    for (auto const p : pitches) {
-      rom.pitch_lut().add_pitch(Pitch(p));
-    }
-
-    rom.duration_lut().add_row(
-        {0x04, 0x0c, 0x08, 0x10, 0x18, 0x20, 0x05, 0x06});
-    rom.duration_lut().add_row(
-        {0x04, 0x0f, 0x09, 0x12, 0x1b, 0x24, 0x06, 0x06});
-    rom.duration_lut().add_row(
-        {0x05, 0x0f, 0x0a, 0x14, 0x1e, 0x28, 0x07, 0x06});
-    rom.duration_lut().add_row(
-        {0x06, 0x12, 0x0c, 0x18, 0x24, 0x30, 0x08, 0x10});
-    rom.duration_lut().add_row(
-        {0x07, 0x15, 0x0e, 0x1c, 0x2a, 0x38, 0x13, 0x12});
-    rom.duration_lut().add_row(
-        {0x07, 0x15, 0x0e, 0x1c, 0x2a, 0x38, 0x09, 0x0a});
-
-    rom.title_pitch_lut().add_pitch(Pitch::none());
-    for (int p = Pitch::C2; p <= Pitch::Cs7; ++p) {
-      rom.title_pitch_lut().add_pitch(Pitch(static_cast<Pitch::Midi>(p)));
-    }
-
-    rom.title_duration_lut().add_row(
-        {8, 24, 16, 32, 48, 64, 96, 128, 11, 10, 80});
-  }
-
-  void add_pattern(Address address, byte tempo, const std::vector<byte>& data) {
-    Address offset = address + (tempo == 0 ? 8 : 6);
-    rom.putc(address + 0x10000, tempo);
-    rom.putw(address + 0x10001, static_cast<WordLE>(offset));
-    rom.putc(address + 0x10003, 0x00);
-    rom.putc(address + 0x10004, 0x00);
-    rom.putc(address + 0x10005, 0x00);
-
-    if (tempo == 0) {
-      rom.putc(address + 0x10004, 0x00);
-      rom.putc(address + 0x10005, 0x00);
-    }
-
-    rom.write(0x10000 + offset, data);
-  }
+  FakeRom rom;
 
   void EXPECT_DATA_EQ(const Pattern& pattern, const std::vector<byte> metadata,
                       const std::vector<byte> expected_data) {
     EXPECT_EQ(pattern.meta_data(0x1234), metadata);
-
     auto encoded_data = rom.encode_pattern(pattern);
     EXPECT_EQ(encoded_data, expected_data);
-  }
-
-  Pattern read_pattern(Address address) {
-    return rom.read_pattern(0x10000 + address);
   }
 };
 
@@ -165,11 +107,11 @@ TEST_F(TestWithFakeRom, Parsing) {
 }
 
 TEST_F(TestWithFakeRom, Dumping) {
-  add_pattern(0x4242, 0x10,
-              {0xe6, 0xf4, 0xac, 0xea, 0xa6, 0xe6, 0xf4, 0xac, 0x2b, 0xe6, 0xf4,
-               0xac, 0xaa, 0xa6, 0xaa, 0x67, 0x65});
+  rom.add_pattern(0x4242, 0x10,
+                  {0xe6, 0xf4, 0xac, 0xea, 0xa6, 0xe6, 0xf4, 0xac, 0x2b, 0xe6,
+                   0xf4, 0xac, 0xaa, 0xa6, 0xaa, 0x67, 0x65});
 
-  Pattern pattern = read_pattern(0x4242);
+  Pattern pattern = rom.read_pattern(0x4242);
   EXPECT_EQ(pattern.length(), Note::Duration::Whole * 4);
   EXPECT_EQ(pattern.dump_notes(Pattern::Channel::Pulse1),
             "B4.4 F#5 D5.2 C#5.4 B4.2 B4.4 F#5 D5.2 C#5.6 B4.4 F#5 D5.2 C#5 B4 "
@@ -197,14 +139,14 @@ TEST_F(TestWithFakeRom, TitleParsing) {
 }
 
 TEST_F(TestWithFakeRom, TitleDumping) {
-  add_pattern(0x1234, 0x00,
-              {
-                  0x83, 0x02, 0x48, 0x82, 0x46, 0x83, 0x3E, 0x34, 0x84,
-                  0x2E, 0x83, 0x30, 0x34, 0x3A, 0x38, 0x34, 0x30, 0x82,
-                  0x34, 0x83, 0x30, 0x85, 0x2E, 0x82, 0x02, 0x00,
-              });
+  rom.add_pattern(0x1234, 0x00,
+                  {
+                      0x83, 0x02, 0x48, 0x82, 0x46, 0x83, 0x3E, 0x34, 0x84,
+                      0x2E, 0x83, 0x30, 0x34, 0x3A, 0x38, 0x34, 0x30, 0x82,
+                      0x34, 0x83, 0x30, 0x85, 0x2E, 0x82, 0x02, 0x00,
+                  });
 
-  Pattern pattern = read_pattern(0x1234);
+  Pattern pattern = rom.read_pattern(0x1234);
   EXPECT_EQ(pattern.length(), Note::Duration::Whole * 4);
   EXPECT_EQ(pattern.dump_notes(Pattern::Channel::Pulse1),
             "r.4 C5 B4.2 G4.4 D4 B3.6 C4.4 D4 F4 E4 D4 C4 D4.2 C4.4 B3.8 r.2");
@@ -266,10 +208,10 @@ TEST(PatternTest, RoundTrip2) {
 }
 
 TEST_F(TestWithFakeRom, TownTheme06) {
-  add_pattern(0x1234, 0x20,
-              {0xe4, 0xa0, 0xe4, 0x21, 0x9f, 0xa7, 0xed, 0x77, 0x00});
+  rom.add_pattern(0x1234, 0x20,
+                  {0xe4, 0xa0, 0xe4, 0x21, 0x9f, 0xa7, 0xed, 0x77, 0x00});
 
-  Pattern pattern = read_pattern(0x1234);
+  Pattern pattern = rom.read_pattern(0x1234);
   EXPECT_EQ(pattern.length(), Note::Duration::Whole * 2);
   EXPECT_EQ(pattern.dump_notes(Pattern::Channel::Pulse1),
             "A#4.4 G#4.2 A#4.4 G#4.6 G4.4t B4 D5 G5.8");
