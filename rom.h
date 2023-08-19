@@ -68,7 +68,7 @@ class Rom {
   void putw(Address address, WordLE data);
   void putwr(Address address, WordBE data);
 
-  void read(byte* buffer, Address address, size_t length) const;
+  std::vector<byte> read(Address address, size_t length) const;
   void write(Address address, std::vector<byte> data);
 
   std::string read_string(Address address) const;

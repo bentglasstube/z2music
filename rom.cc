@@ -74,12 +74,13 @@ WordBE Rom::getwr(Address address) const {
   return (getc(address) << 8) + getc(address + 1);
 }
 
-void Rom::read(byte* buffer, Address address, size_t length) const {
-  // Could use std::copy or std::memcpy but this handles out of range
-  // addresses
+std::vector<byte> Rom::read(Address address, size_t length) const {
+  std::vector<byte> data;
+  data.reserve(length);
   for (size_t i = 0; i < length; ++i) {
-    buffer[i] = getc(address + i);
+    data.emplace_back(getc(address + i));
   }
+  return data;
 }
 
 void Rom::putc(Address address, byte data) {
@@ -452,8 +453,7 @@ DurationLUT::Row Rom::read_duration_lut_row(Address address,
 }
 
 Song Rom::read_song(Address address, byte entry) const {
-  byte table[8];
-  read(table, address, 8);
+  auto table = read(address, 8);
 
   std::unordered_map<byte, byte> offset_map;
   byte n = 0;
@@ -477,13 +477,10 @@ Song Rom::read_song(Address address, byte entry) const {
 Pattern Rom::read_pattern(Address address) const {
   Pattern pattern;
 
-  byte header[6];
-  read(header, address, 6);
-
+  auto header = read(address, 8);
   pattern.tempo(header[0]);
-
   if (pattern.voiced()) {
-    pattern.set_voicing(getc(address + 6), getc(address + 7));
+    pattern.set_voicing(header[6], header[7]);
     LOG(INFO) << "Title pattern, voicing: " << pattern.voice1() << " "
               << pattern.voice2();
   }
