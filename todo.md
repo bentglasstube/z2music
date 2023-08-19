@@ -1,9 +1,3 @@
-# Pitch LUT SFX Interactions
-
-Some of the SFX index into the pitch LUT.  We should track the pitches used by
-them and ensure that they are represented.  Fortunately, these indices are not
-limited to 5 bits and can use the entire space of the pitch LUT.
-
 # Improve duration handling
 
 Change the pattern class to have an actual tempo specified in beats per minute.

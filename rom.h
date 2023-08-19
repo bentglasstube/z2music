@@ -10,6 +10,7 @@
 #include "pattern.h"
 #include "pitch.h"
 #include "pitch_lut.h"
+#include "sfx_notes.h"
 #include "song.h"
 #include "util.h"
 
@@ -112,6 +113,7 @@ class Rom {
   Credits credits_;
   PitchLUT pitch_lut_, title_pitch_lut_;
   DurationLUT duration_lut_, title_duration_lut_;
+  std::vector<SFXNotes> sfx_notes_;
 
   void commit(Address address, std::vector<SongTitle> songs);
   Address get_song_table_address(Address loader_address) const;
@@ -126,11 +128,14 @@ class Rom {
                                size_t max_length = 0) const;
 
   Credits read_credits(Address address) const;
+  void read_sfx_notes(Address address, size_t length);
+  void read_all_sfx_notes();
 
   void rebuild_pitch_lut();
 
   void commit_pitch_lut(Address address);
   void commit_credits(Address address);
+  void commit_sfx_notes();
 
   std::vector<byte> encode_pattern(const Pattern& pattern);
 

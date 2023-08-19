@@ -38,4 +38,12 @@ byte PitchLUT::add_pitch(Pitch pitch) {
   return offset(table_.size() - 1);
 }
 
+bool PitchLUT::has_pitch(Pitch pitch) const {
+  if (pitch == Pitch::none()) return true;
+  for (const auto p : table_) {
+    if (pitch == p) return true;
+  }
+  return false;
+}
+
 }  // namespace z2music

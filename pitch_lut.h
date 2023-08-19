@@ -22,6 +22,7 @@ class PitchLUT {
   void add_pitches(const std::vector<Pitch>& pitches) {
     for (const auto& p : pitches) add_pitch(p);
   }
+  bool has_pitch(Pitch pitch) const;
 
   static byte mask(byte b) { return b & 0b00111110; }
 

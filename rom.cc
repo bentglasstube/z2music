@@ -55,6 +55,9 @@ Rom::Rom(const std::string& filename) {
         read_song(great_palace_song_table, 4);
     songs_[SongTitle::TriforceFanfare] = read_song(great_palace_song_table, 5);
     songs_[SongTitle::FinalBossTheme] = read_song(great_palace_song_table, 6);
+
+    read_all_sfx_notes();
+
   } else {
     LOG(ERROR) << "Unable to open ROM file: " << filename;
   }
@@ -200,6 +203,7 @@ void Rom::commit() {
 
   commit_credits(kCreditsTableAddress);
   commit_pitch_lut(kPitchLUTAddress);
+  commit_sfx_notes();
 }
 
 void Rom::save(const std::string& filename) {
@@ -587,6 +591,16 @@ void Rom::rebuild_pitch_lut() {
     byte i = pitch_lut_.add_pitch(p);
     LOG(INFO) << "Saving pitch " << p << " at index " << i;
   }
+
+  LOG(INFO) << "Adding pitches used for SFX";
+  for (const auto& sfx : sfx_notes_) {
+    for (const Pitch p : sfx) {
+      if (!pitch_lut_.has_pitch(p)) {
+        byte i = pitch_lut_.add_pitch(p);
+        LOG(INFO) << "Added missing pitch " << p << " at index " << i;
+      }
+    }
+  }
 }
 
 void Rom::commit_pitch_lut(Address address) {
@@ -624,6 +638,15 @@ void Rom::commit_credits(Address address) {
 
     putc(data++, 0xff);
     table += 4;
+  }
+}
+
+void Rom::commit_sfx_notes() {
+  for (const auto& sfx : sfx_notes_) {
+    for (size_t i = 0; i < sfx.size(); ++i) {
+      const auto pitch = pitch_lut_.index_for(sfx[i]);
+      putc(sfx.address() + i, pitch);
+    }
   }
 }
 
@@ -683,6 +706,40 @@ std::vector<byte> Rom::encode_note_data(const std::vector<Note>& notes,
   if (null_terminated) data.push_back(0x00);
 
   return data;
+}
+
+void Rom::read_sfx_notes(Address address, size_t length) {
+  LOG(INFO) << "Reading " << length << " pitch indices from address "
+            << address;
+  std::vector<Pitch> pitches;
+  pitches.reserve(length);
+  for (auto b : read(address, length)) {
+    pitches.push_back(pitch_lut_[b]);
+    LOG(INFO) << "Got value " << b << ": " << pitches.back();
+  }
+  sfx_notes_.emplace_back(address, std::move(pitches));
+}
+
+void Rom::read_all_sfx_notes() {
+  read_sfx_notes(0x0192cb, 1);
+  read_sfx_notes(0x0192dc, 1);
+  read_sfx_notes(0x01936f, 1);
+  read_sfx_notes(0x019373, 1);
+  read_sfx_notes(0x0193f5, 1);
+  read_sfx_notes(0x019401, 1);
+  read_sfx_notes(0x0194fa, 1);
+  read_sfx_notes(0x019506, 1);
+  read_sfx_notes(0x01950e, 1);
+  read_sfx_notes(0x019538, 1);
+  read_sfx_notes(0x01955e, 1);
+  read_sfx_notes(0x019562, 1);
+  read_sfx_notes(0x01957a, 1);
+  read_sfx_notes(0x0190fe, 6);
+  read_sfx_notes(0x01963f, 5);
+  read_sfx_notes(0x01964b, 7);
+  read_sfx_notes(0x019658, 6);
+  read_sfx_notes(0x019667, 9);
+  read_sfx_notes(0x0196b6, 31);
 }
 
 }  // namespace z2music

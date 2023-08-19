@@ -91,9 +91,19 @@ cc_library(
     ":pattern",
     ":pitch",
     ":pitch_lut",
+    ":sfx_notes",
     ":song",
     ":util",
   ]
+)
+
+cc_library(
+  name = "sfx_notes",
+  hdrs = ["sfx_notes.h"],
+  deps = [
+    ":note",
+    ":util",
+  ],
 )
 
 cc_library(
@@ -143,6 +153,7 @@ cc_test(
   srcs = ["rom_test.cc"],
   deps = [
     "@googletest//:gtest_main",
+    ":fake_rom",
     ":pitch",
     ":rom",
   ],
