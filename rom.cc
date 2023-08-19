@@ -23,7 +23,7 @@ Rom::Rom(const std::string& filename) {
     pitch_lut_ = read_pitch_lut(kPitchLUTAddress, kPitchLUTLimit);
     title_pitch_lut_ =
         read_pitch_lut(kTitlePitchLUTAddress, kTitlePitchLUTLimit);
-    duration_lut_ = read_duration_lut(kDurationLUTAddress, 46);
+    duration_lut_ = read_duration_lut(kDurationLUTAddress, 48);
     title_duration_lut_ = read_duration_lut(kTitleDurationLUTAddress, 11);
 
     songs_[SongTitle::TitleIntro] = read_song(title_screen_table, 0);
