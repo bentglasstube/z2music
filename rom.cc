@@ -564,8 +564,6 @@ Credits Rom::read_credits(Address address) const {
   return credits;
 }
 
-Note Rom::decode_note(byte b, byte tempo) const {}
-
 void Rom::rebuild_pitch_lut() {
   LOG(INFO) << "Rebuilding pitch LUT";
 

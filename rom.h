@@ -129,7 +129,6 @@ class Rom {
                                size_t max_length = 0) const;
 
   Credits read_credits(Address address) const;
-  Note decode_note(byte b, byte offset) const;
 
   void rebuild_pitch_lut();
 
