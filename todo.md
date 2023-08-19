@@ -1,18 +1,8 @@
-# Fix parsing
+# Pitch LUT SFX Interactions
 
-Use the duration LUT when parsing data instead of hardcoded values.
-
-# Automatic pitch LUT generation
-
-When committing the songs to the rom, first look at the non-title songs and
-gather a list of all the pitches used.  If the number of total pitches used is
-32 or more, throw an error.  The non title songs only have 5 bits to represent
-pitch, and one is required to represent a rest.  Encode the used pitches in the
-pitch LUT.
-
-[Optional] After this, do the same process for the title music.  The title
-music can use the full pitch LUT, but it is still limited so error checking
-will need to happen for this case as well.
+Some of the SFX index into the pitch LUT.  We should track the pitches used by
+them and ensure that they are represented.  Fortunately, these indices are not
+limited to 5 bits and can use the entire space of the pitch LUT.
 
 # Improve duration handling
 
