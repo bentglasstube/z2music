@@ -86,7 +86,7 @@ byte DurationLUT::Row::encode(int ticks) {
 }
 
 int DurationLUT::Row::decode(byte index) const {
-  float ratio = values_[index] / base();
+  float ratio = values_[index] / static_cast<float>(base());
   return std::round(ratio * Note::Duration::Eighth);
 }
 
