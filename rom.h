@@ -99,9 +99,6 @@ class Rom {
   static constexpr Address kCreditsTableAddress = 0x015259;
   static constexpr Address kCreditsBankOffset = 0xc000;
 
-  static constexpr size_t kPitchLUTLimit = 32;
-  static constexpr size_t kTitlePitchLUTLimit = 64;
-
   byte header_[kHeaderSize];
   byte data_[kRomSize];
 

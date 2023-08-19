@@ -20,9 +20,8 @@ Rom::Rom(const std::string& filename) {
     great_palace_song_table = get_song_table_address(kGreatPalaceLoader);
 
     credits_ = read_credits(kCreditsTableAddress);
-    pitch_lut_ = read_pitch_lut(kPitchLUTAddress, kPitchLUTLimit);
-    title_pitch_lut_ =
-        read_pitch_lut(kTitlePitchLUTAddress, kTitlePitchLUTLimit);
+    pitch_lut_ = read_pitch_lut(kPitchLUTAddress, 62);
+    title_pitch_lut_ = read_pitch_lut(kTitlePitchLUTAddress, 64);
     duration_lut_ = read_duration_lut(kDurationLUTAddress, 48);
     title_duration_lut_ = read_duration_lut(kTitleDurationLUTAddress, 11);
 
@@ -577,9 +576,8 @@ void Rom::rebuild_pitch_lut() {
   pitches.erase(Pitch::none());
 
   LOG(INFO) << "Found " << pitches.size() << " unique pitches used.";
-  if (pitches.size() >= kPitchLUTLimit) {
-    LOG(FATAL) << "There are only slots for " << (kPitchLUTLimit - 1)
-               << " unique pitches.";
+  if (pitches.size() >= 32) {
+    LOG(FATAL) << "There are only slots for " << 31 << " unique pitches.";
   }
 
   pitch_lut_.clear();
